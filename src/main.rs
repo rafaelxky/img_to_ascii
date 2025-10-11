@@ -5,6 +5,8 @@ use image::{AnimationDecoder, ImageBuffer, Rgba, RgbaImage, Frame};
 use serde::{Deserialize, Serialize};
 use std::{thread, time::Duration ,env, fs, fs::File, io::BufReader, io::{stdout, Write}};
 use crossterm::terminal::{size};
+mod img_filter;
+use crate::img_filter::*;
 
 #[derive(Debug, Deserialize)]
 struct Config {
@@ -17,11 +19,12 @@ fn main() {
     let config: Config = serde_json::from_str(&json).expect("Json error");
     let gradient: Vec<String> = config.gradient;
     let (term_width, term_height) = size().unwrap(); 
+    img_filter::image_to_ascii(img_filter::scale_image(get_image("random.png"), 100, 100), &gradient);
     //print_gradient(&gradient);
     //img_to_ascii("miku.png", 200, 200, &gradient);
     //animate_gradient(&gradient);
     
-    frames_to_ascii(gif_to_gray(resize_gif(get_gif_frames("miku_dance.gif"),term_width as u32, term_height as u32)), &gradient);
+    //frames_to_ascii(gif_to_gray(resize_gif(get_gif_frames("miku_dance.gif"),term_width as u32, term_height as u32)), &gradient);
 }
 
 fn print_gradient(gradient: &Vec<String>) {
@@ -31,56 +34,6 @@ fn print_gradient(gradient: &Vec<String>) {
         }
         println!();
     }
-}
-
-fn scale_image(image_name: &str, width: u32, height: u32) {
-    let mut path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path.push(image_name);
-    let img =
-        image::open(image_name)
-            .expect("No such image")
-            .resize(width, height, FilterType::Lanczos3);
-    img.save("output.png").unwrap();
-}
-
-fn image_to_gray(image_name: &str) {
-    let img = image::open(image_name).unwrap().to_rgba8();
-    let (width, height) = img.dimensions();
-
-    let mut gray_img = ImageBuffer::new(width, height);
-
-    for (x, y, pixel) in img.enumerate_pixels() {
-        let luma =
-            (0.2126 * pixel[0] as f32 + 0.7152 * pixel[1] as f32 + 0.0722 * pixel[2] as f32) as u8;
-        gray_img.put_pixel(x, y, Rgba([luma, luma, luma, pixel[3]]));
-    }
-
-    gray_img.save("gray.png").unwrap();
-}
-
-fn gray_to_ascii(image_name: &str, chars: &Vec<String>) {
-    let step: usize = 255 / chars.len();
-    let img = image::open(image_name).expect("No such image").to_rgba8();
-    for (_y, row) in img.rows().enumerate() {
-        for (_x, pixel) in row.enumerate() {
-            let mut index = (pixel[0] as usize) / step;
-            if index >= chars.len() {
-                index = chars.len() - 1
-            }
-            let mut chara: &str = &chars[index];
-            if pixel[3] == 0 {
-                chara = " ";
-            }
-            print!("{}", chara);
-        }
-        println!();
-    }
-}
-
-fn img_to_ascii(image_name: &str, width: u32, height: u32, gradient: &Vec<String>) {
-    scale_image(image_name, width, height);
-    image_to_gray("output.png");
-    gray_to_ascii("gray.png", gradient);
 }
 
 fn animate_gradient(gradient: &Vec<String>) {
