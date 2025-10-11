@@ -7,23 +7,18 @@ use std::{thread, time::Duration ,env, fs, fs::File, io::BufReader, io::{stdout,
 use crossterm::terminal::{size};
 mod img_filter;
 use crate::img_filter::*;
-
-#[derive(Debug, Deserialize)]
-struct Config {
-    gradient: Vec<String>,
-}
+mod video;
+use crate::video::*;
+mod lookup_table;
 
 fn main() {
     // gradient from more to less bright
-    let json = fs::read_to_string("config.json").unwrap();
-    let config: Config = serde_json::from_str(&json).expect("Json error");
-    let gradient: Vec<String> = config.gradient;
     let (term_width, term_height) = size().unwrap(); 
-    img_filter::image_to_ascii(img_filter::scale_image(get_image("random.png"), 100, 100), &gradient);
-    //print_gradient(&gradient);
-    //img_to_ascii("miku.png", 200, 200, &gradient);
-    //animate_gradient(&gradient);
-    
+
+    let path = "video.mp4";
+    video_to_ascii(&mut get_video_decoder(path));
+
+    //img_filter::image_to_ascii(img_filter::scale_image(get_image("random.png"), 100, 100), &gradient);
     //frames_to_ascii(gif_to_gray(resize_gif(get_gif_frames("miku_dance.gif"),term_width as u32, term_height as u32)), &gradient);
 }
 

@@ -1,4 +1,7 @@
 use image::{imageops::FilterType, DynamicImage, ImageBuffer, Rgba, Rgb};
+use std::{io::{stdout, Write}};
+
+use crate::lookup_table::LOOKUP;
 
 
 pub fn get_image(path: &str) -> DynamicImage {
@@ -30,21 +33,21 @@ pub fn pixel_to_gray(pixel: &Rgba<u8>) -> u8 {
             + 0.0722 * pixel[2] as f32) as u8
 }
 
-pub fn image_to_ascii(image: DynamicImage, chars: &Vec<String>) {
-    let step: usize = 255 / chars.len();
+pub fn image_to_ascii(image: DynamicImage) {
     let img: ImageBuffer<Rgba<u8>, Vec<u8>> = image.to_rgba8();
+    let mut buffer = String::with_capacity((img.width() * img.height()) as usize);
     for (_y, row) in img.rows().enumerate() {
         for (_x, pixel) in row.enumerate() {
-            let mut index = (pixel_to_gray(pixel) as usize) / step;
-            if index >= chars.len() {
-                index = chars.len() - 1
-            }
-            let mut chara: &str = &chars[index];
+            let gray = pixel_to_gray(pixel);
+            let mut chara: &str = &LOOKUP[gray as usize];
             if pixel[3] == 0 {
                 chara = " ";
             }
-            print!("{}", chara);
+            buffer.push_str(chara);
         }
-        println!();
+        buffer.push_str("\n");
     }
+    print!("{}", buffer);
+    stdout().flush().unwrap(); 
 }
+
