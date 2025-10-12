@@ -100,15 +100,12 @@ pub fn simd_gray_image(image: DynamicImage) -> DynamicImage {
 
 
 pub fn image_to_ascii(image: DynamicImage) {
-    let img: ImageBuffer<Rgba<u8>, Vec<u8>> = image.to_rgba8();
+    let img = simd_gray_image(image).to_rgba8();
     let mut buffer = String::with_capacity((img.width() * img.height()) as usize);
     for (_y, row) in img.rows().enumerate() {
         for (_x, pixel) in row.enumerate() {
-            let gray = pixel_to_gray(pixel);
-            let mut chara: &str = &LOOKUP[gray as usize];
-            if pixel[3] == 0 {
-                chara = " ";
-            }
+            let gray = pixel[0];
+            let chara: &str = if pixel[3] == 0 {" "} else { &LOOKUP[gray as usize] };
             buffer.push_str(chara);
         }
         buffer.push_str("\n");
