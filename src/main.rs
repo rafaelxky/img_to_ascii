@@ -14,7 +14,6 @@ fn main() {
     // gradient from more to less bright
     let (term_width, term_height) = size().unwrap(); 
     let gradient: Vec<String> = LOOKUP.0.to_vec();
-    let char_count: usize = LOOKUP.1;
 
     let path = "miku_dance.gif";
     
@@ -22,17 +21,19 @@ fn main() {
     //frames_to_ascii(gif_to_gray(resize_gif(get_gif_frames(path), 100,100)), &gradient);
 
     //gif
-    gif_to_ascii(&gradient, char_count, path, 100, 100);
+    gif_to_ascii(&gradient, path, 100, 100);
     // image
     //image_to_ascii(&gradient, "miku.png", 100, 100);
 }
 
+#[allow(unused)]
 fn image_to_ascii(gradient: &Vec<String>, path: &str, width: u32, height: u32){
     let mut buffer: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
     static_image_to_ascii(&mut scale_image(get_image(path), width, height), &mut buffer);
 }
 
-fn gif_to_ascii(gradient: &Vec<String>, char_count: usize ,path: &str ,width: u32, height: u32){
+#[allow(unused)]
+fn gif_to_ascii(gradient: &Vec<String>,path: &str ,width: u32, height: u32){
     frames_to_ascii(gif_to_gray(resize_gif(get_gif_frames(path),width, height)), &gradient);
 }
 
