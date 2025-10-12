@@ -16,7 +16,7 @@ fn main() {
     let (term_width, term_height) = size().unwrap(); 
 
     let path = "video.mp4";
-    video_to_ascii(&mut get_video_decoder(path));
+    video_to_ascii(&mut get_video_decoder(path), 50, 50, 1);
 
     //img_filter::image_to_ascii(img_filter::scale_image(get_image("random.png"), 100, 100), &gradient);
     //frames_to_ascii(gif_to_gray(resize_gif(get_gif_frames("miku_dance.gif"),term_width as u32, term_height as u32)), &gradient);

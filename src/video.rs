@@ -9,6 +9,7 @@ use video_rs::decode::Decoder;
 use ndarray::s;
 
 use crate::img_filter::*;
+use std::sync::mpsc::channel;
 
 pub fn get_video_decoder(path: &str) -> Decoder {
     let path = Path::new(path)
@@ -21,17 +22,14 @@ pub fn get_video_decoder(path: &str) -> Decoder {
     Decoder::new(url).expect("Unable to open codec")
 }
 
-pub fn video_to_ascii(decoder: &mut Decoder){
-    let sleep = 100; 
+pub fn video_to_ascii(decoder: &mut Decoder, width: u32, height: u32, sleep_milis: u64){
     for (i, frame_result) in decoder.decode_iter().enumerate() {
-        println!("frame {}", i);
+        println!("Frame {}", i);
         if let Ok((_, frame)) = frame_result {
-            let shape = frame.shape();
-            let height = shape[0];
-            image_to_ascii(scale_image(frame_to_dynamic_image(&frame), 100, 100));
-            print!("\x1B[{}A", height);
+            image_to_ascii(scale_image(frame_to_dynamic_image(&frame), width, height));
+            print!("\x1B[{}A", height + 1);
         }
-        thread::sleep(Duration::from_millis(sleep));
+        thread::sleep(Duration::from_millis(sleep_milis));
     }
 }
 

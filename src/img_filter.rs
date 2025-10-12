@@ -1,7 +1,12 @@
 use image::{imageops::FilterType, DynamicImage, ImageBuffer, Rgba, Rgb};
 use std::{io::{stdout, Write}};
+use std::sync::mpsc::channel;
+use std::thread;
+use video_rs::Decoder;
 
 use crate::lookup_table::LOOKUP;
+use crate::video::frame_to_dynamic_image;
+use wide::f32x8;
 
 
 pub fn get_image(path: &str) -> DynamicImage {
@@ -33,6 +38,67 @@ pub fn pixel_to_gray(pixel: &Rgba<u8>) -> u8 {
             + 0.0722 * pixel[2] as f32) as u8
 }
 
+
+
+pub fn simd_gray_image(image: DynamicImage) -> DynamicImage {
+    let mut img = image.to_rgba8();
+    let pixels = img.as_mut(); // &mut [u8], flat RGBA bytes
+
+    let len = pixels.len();
+    const SIMD_CHUNK: usize = 8; // 8 pixels per SIMD batch
+
+    let r_coeff = f32x8::splat(0.2126);
+    let g_coeff = f32x8::splat(0.7152);
+    let b_coeff = f32x8::splat(0.0722);
+
+    let mut i = 0;
+    while i + SIMD_CHUNK * 4 <= len {
+        // Load 8 pixels (RGBA = 4 bytes per pixel)
+        let mut r = [0f32; SIMD_CHUNK];
+        let mut g = [0f32; SIMD_CHUNK];
+        let mut b = [0f32; SIMD_CHUNK];
+
+        for j in 0..SIMD_CHUNK {
+            let idx = i + j * 4;
+            r[j] = pixels[idx] as f32;
+            g[j] = pixels[idx + 1] as f32;
+            b[j] = pixels[idx + 2] as f32;
+        }
+
+        let r_v = f32x8::from(r);
+        let g_v = f32x8::from(g);
+        let b_v = f32x8::from(b);
+
+        let gray = (r_v * r_coeff) + (g_v * g_coeff) + (b_v * b_coeff);
+
+        let gray_arr: [f32; SIMD_CHUNK] = gray.into();
+
+        for j in 0..SIMD_CHUNK {
+            let idx = i + j * 4;
+            let luma = gray_arr[j] as u8;
+            pixels[idx] = luma;
+            pixels[idx + 1] = luma;
+            pixels[idx + 2] = luma;
+        }
+
+        i += SIMD_CHUNK * 4;
+    }
+
+    // process remaining pixels scalar way
+    while i < len {
+        let luma = (0.2126 * pixels[i] as f32
+            + 0.7152 * pixels[i + 1] as f32
+            + 0.0722 * pixels[i + 2] as f32) as u8;
+        pixels[i] = luma;
+        pixels[i + 1] = luma;
+        pixels[i + 2] = luma;
+        i += 4;
+    }
+
+    DynamicImage::ImageRgba8(img)
+}
+
+
 pub fn image_to_ascii(image: DynamicImage) {
     let img: ImageBuffer<Rgba<u8>, Vec<u8>> = image.to_rgba8();
     let mut buffer = String::with_capacity((img.width() * img.height()) as usize);
@@ -50,4 +116,3 @@ pub fn image_to_ascii(image: DynamicImage) {
     print!("{}", buffer);
     stdout().flush().unwrap(); 
 }
-
