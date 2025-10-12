@@ -17,13 +17,14 @@ fn main() {
 
     let path = "miku_dance.gif";
     
+    //mp4
     //video_to_ascii(&mut get_video_decoder(path), 50, 50, 1);
-    //frames_to_ascii(gif_to_gray(resize_gif(get_gif_frames(path), 100,100)), &gradient);
 
     //gif
-    gif_to_ascii(&gradient, path, 100, 100);
+    //gif_to_ascii(&gradient, path, 100, 100);
+
     // image
-    //image_to_ascii(&gradient, "miku.png", 100, 100);
+    image_to_ascii(&gradient, "photo2.png", 100, 100);
 }
 
 #[allow(unused)]
