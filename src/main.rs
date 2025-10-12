@@ -17,10 +17,11 @@ fn main() {
     let gradient: Vec<String> = LOOKUP.0.to_vec();
 
     //let path = "video.mp4";
-    let path = "miku_dance.gif";
+    let path = "ultrakill.gif";
+
     
     //mp4, gif
-    video_to_ascii(path, 100, 100, 50);
+    video_to_ascii(path, term_width as u32, term_height as u32, 50);
 
     // image
     //image_to_ascii(&gradient, "photo2.png", 100, 100);

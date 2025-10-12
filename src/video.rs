@@ -25,15 +25,27 @@ pub fn get_video_decoder(path: &str, width: u32, height: u32) -> Decoder {
     }
 
 #[allow(unused)]
-pub fn video_to_ascii(decoder: &mut Decoder, width: u32, height: u32, sleep_milis: u64){
+pub fn video_to_ascii(decoder: &mut Decoder, width: u32, height: u32, sleep_millis: u64) {
     let mut buffer: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
-    for (i, frame_result) in decoder.decode_iter().enumerate() {
-        if let Ok((_, frame)) = frame_result {
+
+    loop {
+    match decoder.decode() {
+        Ok((_, frame)) => {
             image_to_ascii(&frame_to_dynamic_image(&frame), &mut buffer);
             print!("\x1B[{}A", height);
         }
-        thread::sleep(Duration::from_millis(sleep_milis));
+        Err(video_rs::Error::DecodeExhausted) => {
+            decoder.seek_to_start().unwrap();
+        }
+        Err(e) => {
+            eprintln!("Decode error: {:?}", e);
+            break;
+        }
     }
+
+    thread::sleep(Duration::from_millis(sleep_millis));
+    }
+
 }
 
 #[allow(unused)]
