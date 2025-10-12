@@ -12,16 +12,16 @@ mod lookup_table;
 use crate::video::{get_video_decoder, video_to_ascii as raw_video_to_ascii};
 
 fn main() {
-    // gradient from more to less bright
+    // gradient from less to more bright
     let (term_width, term_height) = size().unwrap(); 
     let gradient: Vec<String> = LOOKUP.0.to_vec();
 
     //let path = "video.mp4";
-    let path = "ultrakill.gif";
+    let path = "bb.mp4";
 
     
     //mp4, gif
-    video_to_ascii(path, term_width as u32, term_height as u32, 50);
+    video_to_ascii(path, term_width as u32 - 20, term_height as u32 - 20, 10);
 
     // image
     //image_to_ascii(&gradient, "photo2.png", 100, 100);
