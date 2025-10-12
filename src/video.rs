@@ -3,31 +3,34 @@ use std::path::Path;
 use std::time::Duration;
 
 use image::{DynamicImage, ImageBuffer, RgbImage, Rgba};
+use video_rs::{DecoderBuilder, EncoderBuilder, Resize};
 use video_rs::{Url};
 use video_rs::decode::Decoder;
 
 use crate::img_filter::*;
 
 #[allow(unused)]
-pub fn get_video_decoder(path: &str) -> Decoder {
+pub fn get_video_decoder(path: &str, width: u32, height: u32) -> Decoder {
     let path = Path::new(path)
         .canonicalize()
         .expect(&format!("No such path {}", path));
     video_rs::init().unwrap();
+
     let url = Url::from_file_path(path)
         .expect("Failed to convert to url");
     
-    Decoder::new(url).expect("Unable to open codec")
-}
+     DecoderBuilder::new(url)
+        .with_resize(Resize::Fit(width, height))
+        .build().unwrap()
+    }
 
 #[allow(unused)]
 pub fn video_to_ascii(decoder: &mut Decoder, width: u32, height: u32, sleep_milis: u64){
     let mut buffer: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
     for (i, frame_result) in decoder.decode_iter().enumerate() {
-        println!("Frame {}", i);
         if let Ok((_, frame)) = frame_result {
-            image_to_ascii(&scale_image(frame_to_dynamic_image(&frame), width, height), &mut buffer);
-            print!("\x1B[{}A", height + 1);
+            image_to_ascii(&frame_to_dynamic_image(&frame), &mut buffer);
+            print!("\x1B[{}A", height);
         }
         thread::sleep(Duration::from_millis(sleep_milis));
     }
