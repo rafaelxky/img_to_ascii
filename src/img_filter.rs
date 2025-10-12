@@ -1,22 +1,20 @@
-use image::{imageops::FilterType, DynamicImage, ImageBuffer, Rgba, Rgb};
-use std::{io::{stdout, Write}};
-use std::sync::mpsc::channel;
-use std::thread;
-use video_rs::Decoder;
+use image::{imageops::FilterType, DynamicImage, ImageBuffer, Rgba};
 
 use crate::lookup_table::LOOKUP;
-use crate::video::frame_to_dynamic_image;
 use wide::f32x8;
 
 
+#[allow(unused)]
 pub fn get_image(path: &str) -> DynamicImage {
     image::open(path).unwrap()
 } 
 
+#[allow(unused)]
 pub fn scale_image( image: DynamicImage, width: u32, height: u32) -> DynamicImage {
     image.resize(width, height, FilterType::Lanczos3)
 }
 
+#[allow(unused)]
 pub fn gray_image(image: &mut DynamicImage) {
     let mut rgb = image.to_rgba8();
 
@@ -28,18 +26,19 @@ pub fn gray_image(image: &mut DynamicImage) {
     *image = DynamicImage::ImageRgba8(rgb);
 }
 
+#[allow(unused)]
 pub fn save_image(image: &mut DynamicImage, name: &str){
     image.save(name);
 }
 
+#[allow(unused)]
 pub fn pixel_to_gray(pixel: &Rgba<u8>) -> u8 {
             (0.2126 * pixel[0] as f32
             + 0.7152 * pixel[1] as f32
             + 0.0722 * pixel[2] as f32) as u8
 }
 
-
-
+#[allow(unused)]
 pub fn simd_gray_image(image: DynamicImage) -> DynamicImage {
     let mut img = image.to_rgba8();
     let pixels = img.as_mut(); // &mut [u8], flat RGBA bytes
@@ -98,18 +97,29 @@ pub fn simd_gray_image(image: DynamicImage) -> DynamicImage {
     DynamicImage::ImageRgba8(img)
 }
 
+#[allow(unused)]
+pub fn image_to_ascii(image: &DynamicImage, buffer: &mut ImageBuffer<Rgba<u8>, Vec<u8>>) {
+    image
+        .to_rgba8()
+        .enumerate_pixels()
+        .for_each(|(x, y, px)| buffer.put_pixel(x, y, *px));
 
-pub fn image_to_ascii(image: DynamicImage) {
-    let img = simd_gray_image(image).to_rgba8();
-    let mut buffer = String::with_capacity((img.width() * img.height()) as usize);
-    for (_y, row) in img.rows().enumerate() {
-        for (_x, pixel) in row.enumerate() {
+    let width = buffer.width() as usize;
+    let height = buffer.height() as usize;
+    let mut ascii = String::with_capacity(width * height + height);
+
+    for y in 0..height {
+        for x in 0..width {
+            let pixel = buffer.get_pixel(x as u32, y as u32);
             let gray = pixel[0];
-            let chara: &str = if pixel[3] == 0 {" "} else { &LOOKUP[gray as usize] };
-            buffer.push_str(chara);
+            let c = if pixel[3] == 0 { " " } else { &LOOKUP.0[gray as usize] };
+            ascii.push_str(c);
         }
-        buffer.push_str("\n");
+        ascii.push('\n');
     }
-    print!("{}", buffer);
-    stdout().flush().unwrap(); 
+
+    print!("{}", ascii);
+    use std::io::Write;
+    std::io::stdout().flush().unwrap();
 }
+

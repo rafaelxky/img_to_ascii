@@ -1,27 +1,42 @@
 use image::imageops::FilterType;
-use image::{GenericImageView, DynamicImage};
+use image::{DynamicImage, ImageBuffer};
 use image::codecs::gif::GifDecoder;
-use image::{AnimationDecoder, ImageBuffer, Rgba, RgbaImage, Frame};
-use serde::{Deserialize, Serialize};
-use std::{thread, time::Duration ,env, fs, fs::File, io::BufReader, io::{stdout, Write}};
+use image::{AnimationDecoder, Rgba, RgbaImage, Frame};
+use std::{thread, time::Duration, fs::File, io::BufReader, io::{stdout, Write}};
 use crossterm::terminal::{size};
 mod img_filter;
-use crate::img_filter::*;
 mod video;
-use crate::video::*;
+use crate::img_filter::{get_image, scale_image, image_to_ascii as static_image_to_ascii};
+use crate::lookup_table::LOOKUP;
 mod lookup_table;
 
 fn main() {
     // gradient from more to less bright
     let (term_width, term_height) = size().unwrap(); 
+    let gradient: Vec<String> = LOOKUP.0.to_vec();
+    let char_count: usize = LOOKUP.1;
 
-    let path = "video.mp4";
-    video_to_ascii(&mut get_video_decoder(path), 50, 50, 1);
+    let path = "miku_dance.gif";
+    
+    //video_to_ascii(&mut get_video_decoder(path), 50, 50, 1);
+    //frames_to_ascii(gif_to_gray(resize_gif(get_gif_frames(path), 100,100)), &gradient);
 
-    //img_filter::image_to_ascii(img_filter::scale_image(get_image("random.png"), 100, 100), &gradient);
-    //frames_to_ascii(gif_to_gray(resize_gif(get_gif_frames("miku_dance.gif"),term_width as u32, term_height as u32)), &gradient);
+    //gif
+    gif_to_ascii(&gradient, char_count, path, 100, 100);
+    // image
+    //image_to_ascii(&gradient, "miku.png", 100, 100);
 }
 
+fn image_to_ascii(gradient: &Vec<String>, path: &str, width: u32, height: u32){
+    let mut buffer: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
+    static_image_to_ascii(&mut scale_image(get_image(path), width, height), &mut buffer);
+}
+
+fn gif_to_ascii(gradient: &Vec<String>, char_count: usize ,path: &str ,width: u32, height: u32){
+    frames_to_ascii(gif_to_gray(resize_gif(get_gif_frames(path),width, height)), &gradient);
+}
+
+#[allow(unused)]
 fn print_gradient(gradient: &Vec<String>) {
     for _ in 0..5 {
         for char in gradient {
@@ -31,6 +46,7 @@ fn print_gradient(gradient: &Vec<String>) {
     }
 }
 
+#[allow(unused)]
 fn animate_gradient(gradient: &Vec<String>) {
     let height = 5;
     let frames = 40;
@@ -61,6 +77,7 @@ fn animate_gradient(gradient: &Vec<String>) {
 }
 
 
+#[allow(unused)]
 fn get_gif_frames(path: &str) -> Vec<RgbaImage> {
     let file = File::open(path).expect("Cannot open GIF");
     let reader = BufReader::new(file);
@@ -77,6 +94,7 @@ fn get_gif_frames(path: &str) -> Vec<RgbaImage> {
         .collect()
 }
 
+#[allow(unused)]
 fn resize_gif(frames: Vec<RgbaImage>, new_width: u32, new_height: u32) -> Vec<RgbaImage> {
     frames.into_iter()
         .map(|frame| {
@@ -86,6 +104,7 @@ fn resize_gif(frames: Vec<RgbaImage>, new_width: u32, new_height: u32) -> Vec<Rg
         .collect()
 }
 
+#[allow(unused)]
 fn gif_to_gray(frames: Vec<RgbaImage>) -> Vec<RgbaImage> {
     let mut gray_gif = Vec::new();
 
@@ -106,10 +125,9 @@ fn gif_to_gray(frames: Vec<RgbaImage>) -> Vec<RgbaImage> {
     gray_gif
 }
 
-
+#[allow(unused)]
 fn frames_to_ascii(frames: Vec<RgbaImage>, gradient: &Vec<String>) {
         let sleep = 100; // ms
-        let step: usize = 255 / gradient.len();
     loop{
         for img in &frames {
             let (_width, height) = img.dimensions();
@@ -117,16 +135,10 @@ fn frames_to_ascii(frames: Vec<RgbaImage>, gradient: &Vec<String>) {
 
             for row in img.rows() {
                 for pixel in row {
-                    let mut index = (pixel[0] as usize) / step;
-                    if index >= gradient.len() {
-                        index = gradient.len() - 1;
-                    }
-
-                    let mut chara: &str = &gradient[index];
+                    let mut chara: &str = &gradient[pixel[0] as usize];
                     if pixel[3] == 0 {
                         chara = " ";
                     }
-
                     ascii_frame.push_str(chara);
                 }
                 ascii_frame.push('\n');

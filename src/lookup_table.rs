@@ -7,7 +7,7 @@ struct Config {
     gradient: Vec<String>,
 }
 
-pub static LOOKUP: Lazy<[String; 256]> = Lazy::new(|| {
+pub static LOOKUP: Lazy<([String; 256], usize)> = Lazy::new(|| {
     let config_file =  &fs::read_to_string("config.json").expect("Error: missing json config");
     let config: Config = serde_json::from_str(&config_file).expect("Invalid Json");
     let chars: Vec<String> = config.gradient;
@@ -20,5 +20,5 @@ pub static LOOKUP: Lazy<[String; 256]> = Lazy::new(|| {
         }
         table[i] = chars[index].clone();
     }
-    table
+    (table, chars.len())
 });

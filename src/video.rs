@@ -2,15 +2,13 @@ use std::thread;
 use std::path::Path;
 use std::time::Duration;
 
-use image::{DynamicImage, RgbImage};
-use video_rs::ffmpeg::decoder;
-use video_rs::{Frame, Reader, Url};
+use image::{DynamicImage, ImageBuffer, RgbImage, Rgba};
+use video_rs::{Url};
 use video_rs::decode::Decoder;
-use ndarray::s;
 
 use crate::img_filter::*;
-use std::sync::mpsc::channel;
 
+#[allow(unused)]
 pub fn get_video_decoder(path: &str) -> Decoder {
     let path = Path::new(path)
         .canonicalize()
@@ -22,17 +20,20 @@ pub fn get_video_decoder(path: &str) -> Decoder {
     Decoder::new(url).expect("Unable to open codec")
 }
 
+#[allow(unused)]
 pub fn video_to_ascii(decoder: &mut Decoder, width: u32, height: u32, sleep_milis: u64){
+    let mut buffer: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
     for (i, frame_result) in decoder.decode_iter().enumerate() {
         println!("Frame {}", i);
         if let Ok((_, frame)) = frame_result {
-            image_to_ascii(scale_image(frame_to_dynamic_image(&frame), width, height));
+            image_to_ascii(&scale_image(frame_to_dynamic_image(&frame), width, height), &mut buffer);
             print!("\x1B[{}A", height + 1);
         }
         thread::sleep(Duration::from_millis(sleep_milis));
     }
 }
 
+#[allow(unused)]
 pub fn frame_to_dynamic_image(frame: &ndarray::Array3<u8>) -> DynamicImage{
     let shape = frame.shape();
     let height = shape[0] as u32;
