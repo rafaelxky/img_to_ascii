@@ -39,7 +39,7 @@ pub fn pixel_to_gray(pixel: &Rgba<u8>) -> u8 {
 }
 
 #[allow(unused)]
-pub fn simd_gray_image(image: DynamicImage) -> DynamicImage {
+pub fn simd_gray_image(image: &mut DynamicImage) -> DynamicImage {
     let mut img = image.to_rgba8();
     let pixels = img.as_mut(); // &mut [u8], flat RGBA bytes
 
@@ -98,19 +98,16 @@ pub fn simd_gray_image(image: DynamicImage) -> DynamicImage {
 }
 
 #[allow(unused)]
-pub fn image_to_ascii(image: &DynamicImage, buffer: &mut ImageBuffer<Rgba<u8>, Vec<u8>>) {
-    image
-        .to_rgba8()
-        .enumerate_pixels()
-        .for_each(|(x, y, px)| buffer.put_pixel(x, y, *px));
+pub fn image_to_ascii(image: &mut DynamicImage) {
 
-    let width = buffer.width() as usize;
-    let height = buffer.height() as usize;
+    let gray_image = simd_gray_image(image).to_rgba8();
+    let width = gray_image.width() as usize;
+    let height = gray_image.height() as usize;
     let mut ascii = String::with_capacity(width * height + height);
 
     for y in 0..height {
         for x in 0..width {
-            let pixel = buffer.get_pixel(x as u32, y as u32);
+            let pixel = gray_image.get_pixel(x as u32, y as u32);
             let gray = pixel[0];
             let c = if pixel[3] == 0 { " " } else { &LOOKUP.0[gray as usize] };
             ascii.push_str(c);

@@ -15,7 +15,6 @@ fn main() {
 
     //let path = "video.mp4";
     //let path = "bb.mp4";
-
     
     //mp4, gif
     //video_to_ascii(path, term_width as u32 - 20, term_height as u32 - 20, 10);

@@ -9,7 +9,6 @@ pub fn video_to_ascii(path: &str, width: u32, height: u32, sleep: u64){
 }
 
 #[allow(unused)]
-pub fn image_to_ascii(gradient: &Vec<String>, path: &str, width: u32, height: u32){
-    let mut buffer: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
-    static_image_to_ascii(&mut scale_image(get_image(path), width, height), &mut buffer);
+pub fn image_to_ascii(path: &str, width: u32, height: u32){
+    static_image_to_ascii(&mut scale_image(get_image(path), width, height));
 }

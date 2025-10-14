@@ -40,7 +40,7 @@ pub fn handle_args() {
     let data = fs::read(fp).unwrap();
     if let Some(kind) = infer::get(&data) {
         if kind.mime_type().starts_with("image/") {
-            image_to_ascii(&gradient, &args.file_path, width, height);
+            image_to_ascii(&args.file_path, width, height);
         } else if kind.mime_type().starts_with("video/") {
             video_to_ascii(&args.file_path, width, height, args.frame_delay.unwrap_or(50));
         } else {
