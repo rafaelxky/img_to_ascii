@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
-use std::{fs, sync::Mutex};
-use serde::{Deserialize, Serialize};
+use std::{fs};
+use serde::{Deserialize};
 
 #[derive(Debug, Deserialize)]
 struct Config {

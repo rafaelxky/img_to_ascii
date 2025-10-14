@@ -3,7 +3,7 @@ use std::path::Path;
 use std::time::Duration;
 
 use image::{DynamicImage, ImageBuffer, RgbImage, Rgba};
-use video_rs::{DecoderBuilder, EncoderBuilder, Resize};
+use video_rs::{DecoderBuilder, Resize};
 use video_rs::{Url};
 use video_rs::decode::Decoder;
 

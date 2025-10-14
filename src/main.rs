@@ -1,41 +1,27 @@
-use image::imageops::FilterType;
-use image::{DynamicImage, ImageBuffer};
-use image::codecs::gif::GifDecoder;
-use image::{AnimationDecoder, Rgba, RgbaImage, Frame};
-use std::{thread, time::Duration, fs::File, io::BufReader, io::{stdout, Write}};
-use crossterm::terminal::{size};
+use std::{thread, time::Duration};
 mod img_filter;
 mod video;
-use crate::img_filter::{get_image, scale_image, image_to_ascii as static_image_to_ascii};
-use crate::lookup_table::LOOKUP;
 mod lookup_table;
-use crate::video::{get_video_decoder, video_to_ascii as raw_video_to_ascii};
+mod cli_interface;
+mod facade;
+use cli_interface::*;
 
 fn main() {
+    handle_args();
+
     // gradient from less to more bright
-    let (term_width, term_height) = size().unwrap(); 
-    let gradient: Vec<String> = LOOKUP.0.to_vec();
+    //let (term_width, term_height) = size().unwrap(); 
+    //let gradient: Vec<String> = LOOKUP.0.to_vec();
 
     //let path = "video.mp4";
-    let path = "bb.mp4";
+    //let path = "bb.mp4";
 
     
     //mp4, gif
-    video_to_ascii(path, term_width as u32 - 20, term_height as u32 - 20, 10);
+    //video_to_ascii(path, term_width as u32 - 20, term_height as u32 - 20, 10);
 
     // image
     //image_to_ascii(&gradient, "photo2.png", 100, 100);
-}
-
-#[allow(unused)]
-fn video_to_ascii(path: &str, width: u32, height: u32, sleep: u64){
-    raw_video_to_ascii(&mut get_video_decoder(path, width, height), width, height, sleep);
-}
-
-#[allow(unused)]
-fn image_to_ascii(gradient: &Vec<String>, path: &str, width: u32, height: u32){
-    let mut buffer: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
-    static_image_to_ascii(&mut scale_image(get_image(path), width, height), &mut buffer);
 }
 
 #[allow(unused)]

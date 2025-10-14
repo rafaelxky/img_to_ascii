@@ -15,7 +15,7 @@ pub fn scale_image( image: DynamicImage, width: u32, height: u32) -> DynamicImag
 }
 
 #[allow(unused)]
-pub fn gray_image(image: &mut DynamicImage) {
+pub fn image_to_gray(image: &mut DynamicImage) {
     let mut rgb = image.to_rgba8();
 
     for (_, _, pixel) in rgb.enumerate_pixels_mut() {
