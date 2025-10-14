@@ -1,4 +1,4 @@
-use image::{imageops::FilterType, DynamicImage, ImageBuffer, Rgba};
+use image::{imageops::FilterType, DynamicImage, Rgba};
 
 use crate::lookup_table::LOOKUP;
 use wide::f32x8;
@@ -83,7 +83,6 @@ pub fn simd_gray_image(image: &mut DynamicImage) -> DynamicImage {
         i += SIMD_CHUNK * 4;
     }
 
-    // process remaining pixels scalar way
     while i < len {
         let luma = (0.2126 * pixels[i] as f32
             + 0.7152 * pixels[i + 1] as f32

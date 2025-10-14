@@ -2,7 +2,7 @@ use std::thread;
 use std::path::Path;
 use std::time::Duration;
 
-use image::{DynamicImage, ImageBuffer, RgbImage, Rgba};
+use image::{DynamicImage, RgbImage};
 use video_rs::{DecoderBuilder, Resize};
 use video_rs::{Url};
 use video_rs::decode::Decoder;
@@ -41,10 +41,8 @@ pub fn video_to_ascii(decoder: &mut Decoder, width: u32, height: u32, sleep_mill
                 break;
             }
         }
-
         thread::sleep(Duration::from_millis(sleep_millis));
     }
-
 }
 
 #[allow(unused)]

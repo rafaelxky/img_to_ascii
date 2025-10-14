@@ -22,3 +22,9 @@ pub static LOOKUP: Lazy<([String; 256], usize)> = Lazy::new(|| {
     }
     (table, chars.len())
 });
+
+pub static GRADIENT: Lazy<Vec<String>> = Lazy::new(|| {
+    let config_file =  &fs::read_to_string("config.json").expect("Error: missing json config");
+    let config: Config = serde_json::from_str(&config_file).expect("Invalid Json");
+    return config.gradient;
+});

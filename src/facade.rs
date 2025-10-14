@@ -1,5 +1,3 @@
-use image::{ImageBuffer};
-use image::{Rgba};
 use crate::img_filter::{get_image, scale_image, image_to_ascii as static_image_to_ascii};
 use crate::video::{get_video_decoder, video_to_ascii as raw_video_to_ascii};
 

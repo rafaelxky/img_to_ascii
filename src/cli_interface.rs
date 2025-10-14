@@ -2,7 +2,6 @@ use std::{fs::{self, exists}, process::exit};
 
 use crate::facade::*;
 use clap::Parser;
-use crate::lookup_table::LOOKUP;
 use crossterm::terminal::{size};
 use infer;
 
@@ -20,7 +19,6 @@ struct Args{
 
 pub fn handle_args() {
     let args = Args::parse();
-    let gradient: Vec<String> = LOOKUP.0.to_vec();
     let (term_width, term_height) = size().unwrap(); 
 
     let width: u32 = match args.width {
