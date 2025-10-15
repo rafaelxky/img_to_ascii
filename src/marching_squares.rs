@@ -25,7 +25,6 @@ pub fn video_to_marching_squares(decoder: &mut Decoder, width: u32, height: u32,
     }
 }
 
-// image is already gray
 pub fn image_to_marching_squares_ascii(image: &DynamicImage, tolerance: u8){
     let image = image.to_luma8();
     let mut result = String::with_capacity((image.height() * (image.width() + 1)) as usize);

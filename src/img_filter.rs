@@ -41,10 +41,10 @@ pub fn pixel_to_gray(pixel: &Rgba<u8>) -> u8 {
 #[allow(unused)]
 pub fn simd_gray_image(image: &mut DynamicImage) -> DynamicImage {
     let mut img = image.to_rgba8();
-    let pixels = img.as_mut(); // &mut [u8], flat RGBA bytes
+    let pixels = img.as_mut(); 
 
     let len = pixels.len();
-    const SIMD_CHUNK: usize = 8; // 8 pixels per SIMD batch
+    const SIMD_CHUNK: usize = 8;
 
     let r_coeff = f32x8::splat(0.2126);
     let g_coeff = f32x8::splat(0.7152);
@@ -52,7 +52,6 @@ pub fn simd_gray_image(image: &mut DynamicImage) -> DynamicImage {
 
     let mut i = 0;
     while i + SIMD_CHUNK * 4 <= len {
-        // Load 8 pixels (RGBA = 4 bytes per pixel)
         let mut r = [0f32; SIMD_CHUNK];
         let mut g = [0f32; SIMD_CHUNK];
         let mut b = [0f32; SIMD_CHUNK];
