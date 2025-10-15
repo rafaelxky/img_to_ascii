@@ -7,7 +7,7 @@ use clap::{Parser, ValueEnum};
 #[derive(Debug, Clone, ValueEnum)]
 enum FilterOptions{
     ASCII,
-    MarchingSquares,
+    MSquares,
     CAscii,
 }
 
@@ -76,7 +76,7 @@ pub fn handle_args() {
                 FilterOptions::CAscii => {
                     mp.with_process_image(&image_to_colored_ascii);
                 },
-                FilterOptions::MarchingSquares => {
+                FilterOptions::MSquares => {
                     mp.with_process_image(&image_to_marching_squares_ascii);
                 }
             }

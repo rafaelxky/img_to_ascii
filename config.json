@@ -6,5 +6,6 @@
     "gradient2": [
        "█"
     ],
-    "marching_squares_layers": 3
+    "marching_squares_layers": 3,
+    "default_frame_delay": 50
 }

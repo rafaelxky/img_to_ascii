@@ -4,6 +4,8 @@ use crossterm::terminal::size;
 use image::DynamicImage;
 use video_rs::decode::Decoder;
 
+use crate::utils::configs::CONFIG;
+
 pub struct MediaProcessor<'a> {
     pub file_path: String,
     pub width: u32,
@@ -23,7 +25,7 @@ impl <'a> MediaProcessor<'a> {
             file_path,
             width: (width - 5) as u32, 
             height: (height - 5) as u32,
-            frame_delay: 50,
+            frame_delay: CONFIG.default_frame_delay,
             get_image: None,
             get_video_decoder: None,
             process_image: None,

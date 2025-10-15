@@ -6,6 +6,7 @@ use serde::{Deserialize};
 pub struct Config {
     pub gradient: Vec<String>,
     pub marching_squares_layers: u8,
+    pub default_frame_delay: u64,
 }
 
 fn read_config() -> Config {

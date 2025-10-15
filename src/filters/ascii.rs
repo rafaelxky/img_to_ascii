@@ -1,8 +1,4 @@
-use crate::utils::{img_utils::*, video_utils::move_cursor_to_top_image};
-use crate::utils::video_utils::frame_to_dynamic_image;
-use std::thread;
-use std::time::Duration;
-use video_rs::decode::Decoder;
+use crate::utils::{img_utils::*};
 use image::{DynamicImage};
 use crate::utils::configs::{LOOKUP};
 
