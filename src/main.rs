@@ -1,51 +1,11 @@
-use std::{thread, time::Duration};
-mod img_filter;
-mod video;
-mod lookup_table;
 mod cli_interface;
 mod facade;
+mod gradient;
+mod filters;
+mod utils;
 use cli_interface::*;
-mod marching_squares;
-
-use crate::lookup_table::{GRADIENT};
 
 fn main() {
     handle_args();
 }
 
-#[allow(unused)]
-fn print_gradient() {
-    let gradient = &GRADIENT;
-    for _ in 0..5 {
-        for char in gradient.iter() {
-            print!("{}{}", char, char);
-        }
-        println!();
-    }
-}
-
-#[allow(unused)]
-fn animate_gradient() {
-    let mut gradient = GRADIENT.clone();
-    let height = 5;
-    let frames = 40;
-    let sleep = 100;
-    let reversed: Vec<String> = gradient.iter().rev().cloned().collect();
-    gradient.extend(reversed);
-
-    for f in 0..frames {
-        let mut buffer = String::new();
-        if f > 0 {
-            buffer.push_str(&format!("\x1B[{}A", height));
-        }
-        for _ in 0..height {
-            for i in 0..gradient.len() {
-                let chara = &gradient[(f + i) % gradient.len()];
-                buffer.push_str(&format!("{}{}", chara, chara));
-            }
-            buffer.push_str("\n");
-        }
-        print!("{}", buffer);
-        thread::sleep(Duration::from_millis(sleep));
-    }
-}

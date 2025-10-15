@@ -1,13 +1,9 @@
-use std::thread;
 use std::path::Path;
-use std::time::Duration;
-
 use image::{DynamicImage, RgbImage};
 use video_rs::{DecoderBuilder, Resize};
 use video_rs::{Url};
 use video_rs::decode::Decoder;
 
-use crate::img_filter::*;
 
 #[allow(unused)]
 pub fn get_video_decoder(path: &str, width: u32, height: u32) -> Decoder {
@@ -22,28 +18,8 @@ pub fn get_video_decoder(path: &str, width: u32, height: u32) -> Decoder {
      DecoderBuilder::new(url)
         .with_resize(Resize::Fit(width, height))
         .build().unwrap()
-    }
-
-#[allow(unused)]
-pub fn video_to_ascii(decoder: &mut Decoder, width: u32, height: u32, sleep_millis: u64) {
-
-    loop {
-        match decoder.decode() {
-            Ok((_, frame)) => {
-                image_to_ascii(&mut frame_to_dynamic_image(&frame));
-                print!("\x1B[{}A", height);
-            }
-            Err(video_rs::Error::DecodeExhausted) => {
-                decoder.seek_to_start().unwrap();
-            }
-            Err(e) => {
-                eprintln!("Decode error: {:?}", e);
-                break;
-            }
-        }
-        thread::sleep(Duration::from_millis(sleep_millis));
-    }
 }
+
 
 #[allow(unused)]
 pub fn frame_to_dynamic_image(frame: &ndarray::Array3<u8>) -> DynamicImage{

@@ -4,7 +4,6 @@ use crate::{facade::*};
 use crossterm::terminal::{size};
 use infer;
 use clap::{Parser, ValueEnum};
-use video_rs::ffmpeg::filter;
 
 #[derive(Debug, Clone, ValueEnum)]
 enum FilterOptions{

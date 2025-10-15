@@ -1,7 +1,9 @@
-use crate::img_filter::{get_image, image_to_ascii as static_image_to_ascii, scale_image, simd_gray_image};
-use crate::video::{get_video_decoder, video_to_ascii as raw_video_to_ascii};
-use crate::marching_squares::image_to_marching_squares_ascii as msascii;
-use crate::marching_squares::video_to_marching_squares as vtms;
+use crate::utils::img_utils::{get_image, scale_image, simd_gray_image};
+use crate::filters::ascii::image_to_ascii as static_image_to_ascii;
+use crate::utils::video_utils::{get_video_decoder};
+use crate::filters::marching_squares::image_to_marching_squares_ascii as msascii;
+use crate::filters::marching_squares::video_to_marching_squares as vtms;
+use crate::filters::ascii::video_to_ascii as raw_video_to_ascii;
 
 #[allow(unused)]
 pub fn video_to_ascii(path: &str, width: u32, height: u32, sleep: u64){

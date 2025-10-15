@@ -2,7 +2,7 @@ use std::{thread, time::Duration};
 use image::{DynamicImage};
 use video_rs::Decoder;
 
-use crate::{img_filter::simd_gray_image, video::frame_to_dynamic_image};
+use crate::{utils::video_utils::frame_to_dynamic_image};
 
 #[allow(unused)]
 pub fn video_to_marching_squares(decoder: &mut Decoder, width: u32, height: u32, sleep_millis: u64, tolerance: u8) {
@@ -44,7 +44,7 @@ pub fn image_to_marching_squares_ascii(image: &DynamicImage, tolerance: u8){
     println!("{}", result);
 }
 
-pub fn get_case(tl: u8, tr: u8, bl: u8, br: u8, layers: u8) -> String {
+fn get_case(tl: u8, tr: u8, bl: u8, br: u8, layers: u8) -> String {
     let layer_size = 256 / (layers + 1) as u16; 
 
     let same_layer = |a: u8, b: u8| -> bool {
