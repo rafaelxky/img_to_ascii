@@ -1,7 +1,6 @@
-use std::{fs::{self, exists}, process::exit};
+use std::{fs::{self}, path::Path, process::exit};
 
-use crate::{facade::*};
-use crossterm::terminal::{size};
+use crate::{filters::{ascii::image_to_ascii, colored_ascii::image_to_colored_ascii, marching_squares::image_to_marching_squares_ascii}, media_processor::MediaProcessor, utils::{img_utils::get_image, video_utils::{get_video_decoder, process_frames}}};
 use infer;
 use clap::{Parser, ValueEnum};
 
@@ -10,6 +9,19 @@ enum FilterOptions{
     ASCII,
     MarchingSquares,
     CAscii,
+}
+
+enum FileType{
+    Unknown,
+    Unsuported,
+    Video,
+    Image,
+}
+
+#[allow(unused)]
+enum LocationType{
+    Local,
+    Web,
 }
 
 #[derive(Parser, Debug)]
@@ -25,74 +37,82 @@ struct Args{
     
     #[arg(short = 'f', long)]
     filter_option: Option<FilterOptions>,
-
-    #[arg(short = 't', long)]
-    tolerance: Option<u8>
 }
 
 pub fn handle_args() {
     let args = Args::parse();
-    let (term_width, term_height) = size().unwrap(); 
+    let mut mp = MediaProcessor::new(args.file_path);
+    let path = mp.get_path();
 
-    let width: u32 = match args.width {
-        Some(width) => { width },
-        None => { (term_width - 20) as u32}
-    };
-    let height: u32 = match args.height {
-        Some(height) => { height },
-        None => { (term_height - 20) as u32 }
-    };
-
-    let fp = args.file_path.to_lowercase();
-    if !exists(&fp).expect("Error checking file existance!") {
-        println!("{} is not a valid file", &fp);
-        exit(1);
+    if !file_exists(path) {
+        println!("Error: file {} not found", path);
+        std::process::exit(1);
     }
-    let data = fs::read(fp).unwrap();
-    if let Some(kind) = infer::get(&data) {
-        if kind.mime_type().starts_with("image/") {
-            match args.filter_option {
-                Some( filter ) => { match filter {
-                    FilterOptions::ASCII => {
-                        image_to_ascii(&args.file_path, width, height);
-                    },
-                    FilterOptions::MarchingSquares => {
-                        image_to_marching_squares(&args.file_path, width, height, args.tolerance.unwrap_or(50));
-                    },
-                    FilterOptions::CAscii => {
-                        image_to_colored_ascii(&args.file_path, width, height);
-                    }
-                }},
-                None => { 
-                    image_to_ascii(&args.file_path, width, height);
-                }
-            }
-        } else if kind.mime_type().starts_with("video/") {
-            match args.filter_option {
-                Some(filter) => {
-                    match filter {
-                        FilterOptions::ASCII => {
-                            video_to_ascii(&args.file_path, width, height, args.frame_delay.unwrap_or(50));
-                        },
-                        FilterOptions::MarchingSquares => {
-                            video_to_marching_squares(&args.file_path, width, height, args.tolerance.unwrap_or(2), args.frame_delay.unwrap_or(50));
-                        },
-                        FilterOptions::CAscii => {
-                            video_to_colored_ascii(&args.file_path, width, height, args.frame_delay.unwrap_or(50));
-                        },
-                    }
-                },
-                None => {
-                    video_to_ascii(&args.file_path, width, height, args.frame_delay.unwrap_or(50));
-                }
-            }
-        } else {
-            println!("Unsuported file type!");
+
+    match get_file_type(mp.get_path()) {
+        FileType::Video => { 
+            mp.with_get_video_decoder(&get_video_decoder);
+            mp.with_process_video(&process_frames);
+        },
+        FileType::Image => { 
+            mp.with_get_image(&get_image);
+        },
+        FileType::Unknown => { 
+            println!("Error: filetype unknown!");
             exit(1);
-        }
-    } else {
-        println!("Unknown file type!");
-        exit(1);
+        },
+        FileType::Unsuported => { 
+            println!("Error, unsuported filetype!");
+            exit(1);
+        },
     }
+
+    match args.filter_option {
+        Some(filter) => {
+            match filter {
+                FilterOptions::ASCII => {
+                    mp.with_process_image(&image_to_ascii);
+                },
+                FilterOptions::CAscii => {
+                    mp.with_process_image(&image_to_colored_ascii);
+                },
+                FilterOptions::MarchingSquares => {
+                    mp.with_process_image(&image_to_marching_squares_ascii);
+                }
+            }
+        }, 
+        None => {
+            mp.with_process_image(&image_to_ascii);
+        }
+    }
+
+    if let Some(frame_delay) = args.frame_delay {
+        mp.with_frame_delay(frame_delay);
+    }
+    if let Some(width) = args.width {
+        mp.with_width(width);   
+    }
+    if let Some(height) = args.height {
+        mp.with_height(height);
+    }
+
+    mp.execute();
 }
 
+fn get_file_type(file_path: &str) -> FileType {
+    let data = fs::read(file_path).unwrap();
+    if let Some(kind) = infer::get(&data) {
+        if kind.mime_type().starts_with("image/") {
+            return FileType::Image;
+        }
+        if kind.mime_type().starts_with("video/") {
+            return FileType::Video;
+        }
+        return FileType::Unsuported;
+    }
+    return FileType::Unknown;
+}
+
+fn file_exists(path: &str) -> bool{
+    Path::new(path).exists()
+}

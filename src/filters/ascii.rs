@@ -4,31 +4,8 @@ use std::thread;
 use std::time::Duration;
 use video_rs::decode::Decoder;
 use image::{DynamicImage};
-use crate::utils::lookup_table::{LOOKUP};
+use crate::utils::configs::{LOOKUP};
 
-#[allow(unused)]
-pub fn video_to_ascii(decoder: &mut Decoder, width: u32, height: u32, sleep_millis: u64) {
-
-    loop {
-        match decoder.decode() {
-            Ok((_, frame)) => {
-                let mut dimage = frame_to_dynamic_image(&frame);
-                image_to_ascii(&mut dimage);
-                move_cursor_to_top_image(&dimage);
-            }
-            Err(video_rs::Error::DecodeExhausted) => {
-                decoder.seek_to_start().unwrap();
-            }
-            Err(e) => {
-                eprintln!("Decode error: {:?}", e);
-                break;
-            }
-        }
-        thread::sleep(Duration::from_millis(sleep_millis));
-    }
-}
-
-#[allow(unused)]
 pub fn image_to_ascii(image: &mut DynamicImage) {
 
     let gray_image = simd_gray_image(image).to_rgba8();

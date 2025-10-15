@@ -1,9 +1,10 @@
 {
-    "gradient2": [
+    "gradient": [
         " ", ".", "`", ":", "~", "^", "-", "=", "+", "*",
         "x", "X", "%", "#", "B", "&", "8", "W", "M", "@"
     ],
-    "gradient": [
+    "gradient2": [
        "█"
-    ]
+    ],
+    "marching_squares_layers": 3
 }

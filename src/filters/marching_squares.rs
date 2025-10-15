@@ -1,32 +1,8 @@
-use std::{thread, time::Duration};
 use image::{DynamicImage};
-use video_rs::Decoder;
+use crate::utils::{configs::CONFIG};
 
-use crate::utils::video_utils::{frame_to_dynamic_image, move_cursor_to_top_image};
-
-#[allow(unused)]
-pub fn video_to_marching_squares(decoder: &mut Decoder, sleep_millis: u64, tolerance: u8) {
-
-    loop {
-        match decoder.decode() {
-            Ok((_, frame)) => {
-                let mut dimage = frame_to_dynamic_image(&frame);
-                image_to_marching_squares_ascii(&dimage, tolerance);
-                move_cursor_to_top_image(&dimage);
-            }
-            Err(video_rs::Error::DecodeExhausted) => {
-                decoder.seek_to_start().unwrap();
-            }
-            Err(e) => {
-                eprintln!("Decode error: {:?}", e);
-                break;
-            }
-        }
-        thread::sleep(Duration::from_millis(sleep_millis));
-    }
-}
-
-pub fn image_to_marching_squares_ascii(image: &DynamicImage, tolerance: u8){
+pub fn image_to_marching_squares_ascii(image: &mut DynamicImage){
+    let tolerance = CONFIG.marching_squares_layers;
     let image = image.to_luma8();
     let mut result = String::with_capacity((image.height() * (image.width() + 1)) as usize);
 

@@ -1,9 +1,9 @@
-use crate::utils::lookup_table::{GRADIENT};
+use crate::utils::configs::{CONFIG};
 use std::{thread, time::Duration};
 
 #[allow(unused)]
 fn print_gradient() {
-    let gradient = &GRADIENT;
+    let gradient = &CONFIG.gradient;
     for _ in 0..5 {
         for char in gradient.iter() {
             print!("{}{}", char, char);
@@ -14,7 +14,7 @@ fn print_gradient() {
 
 #[allow(unused)]
 fn animate_gradient() {
-    let mut gradient = GRADIENT.clone();
+    let mut gradient = CONFIG.gradient.clone();
     let height = 5;
     let frames = 40;
     let sleep = 100;

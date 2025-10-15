@@ -43,13 +43,13 @@ pub fn move_cursor_to_top_image(din_image: &DynamicImage){
 }
 
 #[allow(unused)]
-pub fn process_frames(decoder: &mut Decoder, sleep_millis: u64, value: u8, process_image: &Box<dyn Fn(&DynamicImage, u8)> ) {
+pub fn process_frames(decoder: &mut Decoder, sleep_millis: u64,  process_image: &Box<dyn for<'a> Fn(&'a mut DynamicImage)>) {
 
     loop {
         match decoder.decode() {
             Ok((_, frame)) => {
                 let mut dimage = frame_to_dynamic_image(&frame);
-                process_image(&dimage, value);
+                process_image(&mut dimage);
                 move_cursor_to_top_image(&dimage);
             }
             Err(video_rs::Error::DecodeExhausted) => {
