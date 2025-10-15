@@ -1,4 +1,6 @@
 use std::path::Path;
+use std::thread;
+use std::time::Duration;
 use image::{DynamicImage, RgbImage};
 use video_rs::{DecoderBuilder, Resize};
 use video_rs::{Url};
@@ -38,4 +40,26 @@ pub fn frame_to_dynamic_image(frame: &ndarray::Array3<u8>) -> DynamicImage{
 #[allow(unused)]
 pub fn move_cursor_to_top_image(din_image: &DynamicImage){
     print!("\x1B[{}A", din_image.height());
+}
+
+#[allow(unused)]
+pub fn process_frames(decoder: &mut Decoder, sleep_millis: u64, value: u8, process_image: &Box<dyn Fn(&DynamicImage, u8)> ) {
+
+    loop {
+        match decoder.decode() {
+            Ok((_, frame)) => {
+                let mut dimage = frame_to_dynamic_image(&frame);
+                process_image(&dimage, value);
+                move_cursor_to_top_image(&dimage);
+            }
+            Err(video_rs::Error::DecodeExhausted) => {
+                decoder.seek_to_start().unwrap();
+            }
+            Err(e) => {
+                eprintln!("Decode error: {:?}", e);
+                break;
+            }
+        }
+        thread::sleep(Duration::from_millis(sleep_millis));
+    }
 }

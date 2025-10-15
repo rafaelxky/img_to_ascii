@@ -2,8 +2,8 @@ use image::{imageops::FilterType, DynamicImage, Rgba};
 use wide::f32x8;
 
 #[allow(unused)]
-pub fn get_image(path: &str) -> DynamicImage {
-    image::open(path).expect("Error, could not get image!")
+pub fn get_image(path: &str, width: u32, height: u32) -> DynamicImage {
+    scale_image(image::open(path).expect("Error, could not get image!"), width, height)
 } 
 
 #[allow(unused)]

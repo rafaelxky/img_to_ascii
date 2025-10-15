@@ -14,7 +14,7 @@ pub fn video_to_ascii(path: &str, width: u32, height: u32, sleep: u64){
 
 #[allow(unused)]
 pub fn image_to_ascii(path: &str, width: u32, height: u32){
-    static_image_to_ascii(&mut scale_image(get_image(path), width, height));
+    static_image_to_ascii(&mut get_image(path, width, height));
 }
 
 #[allow(unused)]
@@ -24,7 +24,7 @@ pub fn video_to_marching_squares(path: &String, width: u32, height: u32, toleran
 
 #[allow(unused)]
 pub fn image_to_marching_squares(path: &String, width: u32, height: u32, layers: u8){
-    msascii(&simd_gray_image(&mut scale_image(get_image(path), width, height)), layers);
+    msascii(&simd_gray_image(&mut get_image(path, width, height)), layers);
 }
 
 #[allow(unused)]
@@ -34,6 +34,6 @@ pub fn video_to_colored_ascii(path: &String, width: u32, height: u32, sleep: u64
 
 #[allow(unused)]
 pub fn image_to_colored_ascii(path: &String, width: u32, height: u32){
-    img_cascii(&mut scale_image(get_image(path), width, height));
+    img_cascii(&mut get_image(path, width, height));
 }
 
