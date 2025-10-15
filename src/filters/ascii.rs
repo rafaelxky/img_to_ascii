@@ -1,4 +1,4 @@
-use crate::utils::img_utils::*;
+use crate::utils::{img_utils::*, video_utils::move_cursor_to_top_image};
 use crate::utils::video_utils::frame_to_dynamic_image;
 use std::thread;
 use std::time::Duration;
@@ -12,8 +12,9 @@ pub fn video_to_ascii(decoder: &mut Decoder, width: u32, height: u32, sleep_mill
     loop {
         match decoder.decode() {
             Ok((_, frame)) => {
-                image_to_ascii(&mut frame_to_dynamic_image(&frame));
-                print!("\x1B[{}A", height);
+                let mut dimage = frame_to_dynamic_image(&frame);
+                image_to_ascii(&mut dimage);
+                move_cursor_to_top_image(&dimage);
             }
             Err(video_rs::Error::DecodeExhausted) => {
                 decoder.seek_to_start().unwrap();

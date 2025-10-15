@@ -9,6 +9,7 @@ use clap::{Parser, ValueEnum};
 enum FilterOptions{
     ASCII,
     MarchingSquares,
+    CAscii,
 }
 
 #[derive(Parser, Debug)]
@@ -57,6 +58,9 @@ pub fn handle_args() {
                     },
                     FilterOptions::MarchingSquares => {
                         image_to_marching_squares(&args.file_path, width, height, args.tolerance.unwrap_or(50));
+                    },
+                    FilterOptions::CAscii => {
+                        image_to_colored_ascii(&args.file_path, width, height);
                     }
                 }},
                 None => { 
@@ -72,7 +76,10 @@ pub fn handle_args() {
                         },
                         FilterOptions::MarchingSquares => {
                             video_to_marching_squares(&args.file_path, width, height, args.tolerance.unwrap_or(2), args.frame_delay.unwrap_or(50));
-                        }
+                        },
+                        FilterOptions::CAscii => {
+                            video_to_colored_ascii(&args.file_path, width, height, args.frame_delay.unwrap_or(50));
+                        },
                     }
                 },
                 None => {

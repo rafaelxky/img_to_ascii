@@ -2,16 +2,17 @@ use std::{thread, time::Duration};
 use image::{DynamicImage};
 use video_rs::Decoder;
 
-use crate::{utils::video_utils::frame_to_dynamic_image};
+use crate::utils::video_utils::{frame_to_dynamic_image, move_cursor_to_top_image};
 
 #[allow(unused)]
-pub fn video_to_marching_squares(decoder: &mut Decoder, width: u32, height: u32, sleep_millis: u64, tolerance: u8) {
+pub fn video_to_marching_squares(decoder: &mut Decoder, sleep_millis: u64, tolerance: u8) {
 
     loop {
         match decoder.decode() {
             Ok((_, frame)) => {
-                image_to_marching_squares_ascii(&mut frame_to_dynamic_image(&frame), tolerance);
-                print!("\x1B[{}A", height);
+                let mut dimage = frame_to_dynamic_image(&frame);
+                image_to_marching_squares_ascii(&dimage, tolerance);
+                move_cursor_to_top_image(&dimage);
             }
             Err(video_rs::Error::DecodeExhausted) => {
                 decoder.seek_to_start().unwrap();

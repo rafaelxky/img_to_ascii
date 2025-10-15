@@ -34,3 +34,8 @@ pub fn frame_to_dynamic_image(frame: &ndarray::Array3<u8>) -> DynamicImage{
 
     DynamicImage::ImageRgb8(img)
 }
+
+#[allow(unused)]
+pub fn move_cursor_to_top_image(din_image: &DynamicImage){
+    print!("\x1B[{}A", din_image.height());
+}
