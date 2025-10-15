@@ -72,7 +72,7 @@ pub fn handle_args() {
                             video_to_ascii(&args.file_path, width, height, args.frame_delay.unwrap_or(50));
                         },
                         FilterOptions::MarchingSquares => {
-                            video_to_marching_squares(&args.file_path, width, height, args.tolerance.unwrap_or(50));
+                            video_to_marching_squares(&args.file_path, width, height, args.tolerance.unwrap_or(2), args.frame_delay.unwrap_or(50));
                         }
                     }
                 },

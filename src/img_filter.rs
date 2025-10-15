@@ -6,7 +6,7 @@ use wide::f32x8;
 
 #[allow(unused)]
 pub fn get_image(path: &str) -> DynamicImage {
-    image::open(path).unwrap()
+    image::open(path).expect("Error, could not get image!")
 } 
 
 #[allow(unused)]

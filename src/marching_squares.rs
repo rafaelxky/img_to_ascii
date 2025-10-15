@@ -2,7 +2,7 @@ use std::{thread, time::Duration};
 use image::{DynamicImage};
 use video_rs::Decoder;
 
-use crate::video::frame_to_dynamic_image;
+use crate::{img_filter::simd_gray_image, video::frame_to_dynamic_image};
 
 #[allow(unused)]
 pub fn video_to_marching_squares(decoder: &mut Decoder, width: u32, height: u32, sleep_millis: u64, tolerance: u8) {
@@ -45,32 +45,32 @@ pub fn image_to_marching_squares_ascii(image: &DynamicImage, tolerance: u8){
     println!("{}", result);
 }
 
-pub fn get_case(tl: u8, tr: u8, bl: u8, br: u8, tolerance: u8) -> String {
-    // Helper: are two corners within tolerance of each other?
-    let similar = |a: u8, b: u8| -> bool {
-        if a > b { a - b <= tolerance } else { b - a <= tolerance }
+pub fn get_case(tl: u8, tr: u8, bl: u8, br: u8, layers: u8) -> String {
+    let layer_size = 256 / (layers + 1) as u16; 
+
+    let same_layer = |a: u8, b: u8| -> bool {
+        (a as u16 / layer_size) == (b as u16 / layer_size)
     };
 
-    // Check pairs of corners
-    let top_sim = similar(tl, tr);
-    let bottom_sim = similar(bl, br);
-    let left_sim = similar(tl, bl);
-    let right_sim = similar(tr, br);
-    let diag1 = similar(tl, br); // top-left -> bottom-right
-    let diag2 = similar(tr, bl); // top-right -> bottom-left
+    let top_sim = same_layer(tl, tr);
+    let bottom_sim = same_layer(bl, br);
+    let left_sim = same_layer(tl, bl);
+    let right_sim = same_layer(tr, br);
+    let diag1 = same_layer(tl, br);
+    let diag2 = same_layer(tr, bl);
 
-    // Decide character
     if top_sim && bottom_sim && left_sim && right_sim {
-        " ".to_string() // all similar
+        " ".to_string() 
     } else if top_sim && bottom_sim {
-        "-".to_string() // horizontal edges
+        "-".to_string()
     } else if left_sim && right_sim {
-        "|".to_string() // vertical edges
+        "|".to_string()
     } else if diag1 {
-        "\\".to_string() // diagonal TL -> BR
+        "\\".to_string()
     } else if diag2 {
-        "/".to_string() // diagonal TR -> BL
+        "/".to_string()
     } else {
-        "-".to_string() // fallback
+        "-".to_string()
     }
 }
+
