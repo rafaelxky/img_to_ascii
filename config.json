@@ -1,11 +1,12 @@
 {
-    "gradient": [
+    "gradients": [[
         " ", ".", "`", ":", "~", "^", "-", "=", "+", "*",
         "x", "X", "%", "#", "B", "&", "8", "W", "M", "@"
     ],
-    "gradient2": [
+    [
        "█"
-    ],
+    ]],
+    "selected_gradient": 0,
     "marching_squares_layers": 3,
     "default_frame_delay": 50
 }

@@ -1,12 +1,17 @@
+use clap::Parser;
 use once_cell::sync::Lazy;
+use serde_json::Value;
 use std::{fs};
-use serde::{Deserialize};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+use crate::cli_interface::Args;
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
-    pub gradient: Vec<String>,
+    pub gradients: Vec<Vec<String>>,
     pub marching_squares_layers: u8,
     pub default_frame_delay: u64,
+    pub selected_gradient: usize,
 }
 
 fn read_config() -> Config {
@@ -15,11 +20,24 @@ fn read_config() -> Config {
 }
 
 pub static CONFIG: Lazy<Config> = Lazy::new(|| {
-    read_config()
+    let mut value = serde_json::to_value(read_config()).unwrap();
+
+    for kv in &ARGS.set {
+        if let Some((key, val)) = kv.split_once('=') {
+            let val_json = serde_json::from_str(val).unwrap_or(Value::String(val.to_string()));
+            value[key] = val_json;
+        } 
+    }
+
+    serde_json::from_value(value).unwrap()
+});
+
+pub static ARGS: Lazy<Args> = Lazy::new(|| {
+    Args::parse()
 });
 
 pub static LOOKUP: Lazy<([String; 256], usize)> = Lazy::new(|| {
-    let chars: &Vec<String> = &CONFIG.gradient;
+    let chars: &Vec<String> = &CONFIG.gradients[CONFIG.selected_gradient];
 
     let mut table: [String; 256] = array_init::array_init(|_| String::new());
     for i in 0..256 {
@@ -31,3 +49,4 @@ pub static LOOKUP: Lazy<([String; 256], usize)> = Lazy::new(|| {
     }
     (table, chars.len())
 });
+

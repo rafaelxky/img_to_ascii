@@ -1,16 +1,18 @@
 use std::{fs::{self}, path::Path, process::exit};
 
-use crate::{filters::{ascii::image_to_ascii, colored_ascii::image_to_colored_ascii, marching_squares::image_to_marching_squares_ascii}, media_processor::MediaProcessor, utils::{img_utils::get_image, video_utils::{get_video_decoder, process_frames}}};
+use crate::{filters::{ascii::image_to_ascii, colored_ascii::image_to_colored_ascii, marching_squares::image_to_marching_squares_ascii}, media_processor::MediaProcessor, utils::{configs::ARGS, img_utils::get_image, video_utils::{get_video_decoder, process_frames}}};
 use infer;
 use clap::{Parser, ValueEnum};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, ValueEnum)]
+#[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
 enum FilterOptions{
     ASCII,
     MSquares,
     CAscii,
 }
 
+#[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
 enum FileType{
     Unknown,
     Unsuported,
@@ -18,30 +20,33 @@ enum FileType{
     Image,
 }
 
+#[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
 #[allow(unused)]
 enum LocationType{
     Local,
     Web,
 }
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Serialize, Deserialize)]
 #[command(version, about, long_about = None)]
-struct Args{
+pub struct Args{
 
-    file_path: String,
-    width: Option<u32>,
-    height: Option<u32>,
+    pub file_path: String,
+    pub width: Option<u32>,
+    pub height: Option<u32>,
 
     #[arg(short = 'd', long)]
-    frame_delay: Option<u64>,
+    pub frame_delay: Option<u64>,
     
     #[arg(short = 'f', long)]
-    filter_option: Option<FilterOptions>,
+    pub filter_option: Option<FilterOptions>,
+
+    #[arg(short = 's', long)]
+    pub set: Vec<String>,
 }
 
 pub fn handle_args() {
-    let args = Args::parse();
-    let mut mp = MediaProcessor::new(args.file_path);
+    let mut mp = MediaProcessor::new(ARGS.file_path.clone());
     let path = mp.get_path();
 
     if !file_exists(path) {
@@ -67,7 +72,7 @@ pub fn handle_args() {
         },
     }
 
-    match args.filter_option {
+    match &ARGS.filter_option {
         Some(filter) => {
             match filter {
                 FilterOptions::ASCII => {
@@ -86,13 +91,13 @@ pub fn handle_args() {
         }
     }
 
-    if let Some(frame_delay) = args.frame_delay {
+    if let Some(frame_delay) = ARGS.frame_delay {
         mp.with_frame_delay(frame_delay);
     }
-    if let Some(width) = args.width {
+    if let Some(width) = ARGS.width {
         mp.with_width(width);   
     }
-    if let Some(height) = args.height {
+    if let Some(height) = ARGS.height {
         mp.with_height(height);
     }
 

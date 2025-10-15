@@ -3,7 +3,7 @@ use std::{thread, time::Duration};
 
 #[allow(unused)]
 fn print_gradient() {
-    let gradient = &CONFIG.gradient;
+    let gradient = &CONFIG.gradients[0];
     for _ in 0..5 {
         for char in gradient.iter() {
             print!("{}{}", char, char);
@@ -14,7 +14,7 @@ fn print_gradient() {
 
 #[allow(unused)]
 fn animate_gradient() {
-    let mut gradient = CONFIG.gradient.clone();
+    let mut gradient = CONFIG.gradients[0].clone();
     let height = 5;
     let frames = 40;
     let sleep = 100;
