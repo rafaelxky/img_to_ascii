@@ -5,6 +5,7 @@ mod lookup_table;
 mod cli_interface;
 mod facade;
 use cli_interface::*;
+mod marching_squares;
 
 use crate::lookup_table::{GRADIENT};
 
