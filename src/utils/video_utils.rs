@@ -6,9 +6,11 @@ use video_rs::{DecoderBuilder, Resize};
 use video_rs::{Url};
 use video_rs::decode::Decoder;
 
+use crate::media_type::MediaType;
+
 
 #[allow(unused)]
-pub fn get_video_decoder(path: &str, width: u32, height: u32) -> Decoder {
+pub fn get_video_decoder(path: &str, width: u32, height: u32) -> MediaType {
     let path = Path::new(path)
         .canonicalize()
         .expect(&format!("No such path {}", path));
@@ -17,9 +19,9 @@ pub fn get_video_decoder(path: &str, width: u32, height: u32) -> Decoder {
     let url = Url::from_file_path(path)
         .expect("Failed to convert to url");
     
-     DecoderBuilder::new(url)
+     MediaType::Video(DecoderBuilder::new(url)
         .with_resize(Resize::Fit(width, height))
-        .build().unwrap()
+        .build().unwrap())
 }
 
 

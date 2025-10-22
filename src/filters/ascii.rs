@@ -2,7 +2,7 @@ use crate::utils::{img_utils::*};
 use image::{DynamicImage};
 use crate::utils::configs::{LOOKUP};
 
-pub fn image_to_ascii(image: &mut DynamicImage) {
+pub fn image_to_ascii(image: &mut DynamicImage){
 
     let gray_image = simd_gray_image(image).to_rgba8();
     let width = gray_image.width() as usize;
