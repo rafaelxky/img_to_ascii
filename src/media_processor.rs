@@ -2,12 +2,13 @@ use std::{process::exit};
 
 use crossterm::terminal::size;
 use image::DynamicImage;
-use video_rs::decode::Decoder;
+use video_rs::{decode::Decoder, ffmpeg::media};
 
 
 use crate::{media_processor, media_type::{MediaProcessorType, MediaSourceType, MediaType}, utils::configs::CONFIG};
 
-type FilterChain = fn(&Vec<fn(&mut DynamicImage)>, &mut DynamicImage);
+type ApplyFilterChain = fn(&Vec<fn(&mut DynamicImage)>, &mut DynamicImage);
+type MediaOutput =  fn(&mut DynamicImage);
 
 pub struct MediaProcessor {
     pub file_path: String,
@@ -17,7 +18,7 @@ pub struct MediaProcessor {
     pub source_media: Option<MediaSourceType>,
     pub process_media: Option<MediaProcessorType>,
     pub filter_chain: Vec<fn(&mut DynamicImage)>,
-    pub media_output: Option<fn(&mut DynamicImage)>,
+    pub media_output: Option<MediaOutput>,
 }
 
 impl MediaProcessor {
@@ -33,10 +34,6 @@ impl MediaProcessor {
             process_media: None,
             media_output: None,
             filter_chain: Vec::new(),
-            //get_image: None,
-            //get_video_decoder: None,
-            //process_image: None,
-            //process_video: None,
         }
     }
 
@@ -56,12 +53,12 @@ impl MediaProcessor {
         self.frame_delay = frame_delay;
         self
     }
-    pub fn with_process_image(&mut self, image_processor: fn(DynamicImage, FilterChain, &Vec<fn(&mut DynamicImage)>)) -> &mut Self {
+    pub fn with_process_image(&mut self, image_processor: fn(DynamicImage, ApplyFilterChain, &Vec<fn(&mut DynamicImage)>, MediaOutput)) -> &mut Self {
         self.process_media = Some(MediaProcessorType::ImageProcessor(image_processor));
         self
     }
 
-    pub fn with_process_video(&mut self, video_processor: fn(Decoder, u64, FilterChain, &Vec<fn(&mut DynamicImage)>)) -> &mut Self {
+    pub fn with_process_video(&mut self, video_processor: fn(Decoder, u64, ApplyFilterChain, &Vec<fn(&mut DynamicImage)>, MediaOutput)) -> &mut Self {
         self.process_media = Some(MediaProcessorType::VideoProcessor(video_processor));
         self
     }
@@ -89,14 +86,14 @@ impl MediaProcessor {
             exit(1);
        }
 
-       if let (Some(media_processor), Some(media_source), Some(media_output)) = (&self.process_media, &self.source_media, &self.media_output){
+       if let (Some(media_processor), Some(media_source), Some(media_output)) = (&self.process_media, &self.source_media, self.media_output){
             // image
            if let (MediaProcessorType::ImageProcessor(process_image), MediaSourceType::ImageSource(source_image)) = (media_processor, media_source){
-                process_image(source_image(&self.file_path, self.width, self.height), apply_filter_chain, &self.filter_chain);
+                process_image(source_image(&self.file_path, self.width, self.height), apply_filter_chain, &self.filter_chain, media_output);
            } else  
            // video
            if let (MediaProcessorType::VideoProcessor(process_video), MediaSourceType::VideoSource(source_video)) = (media_processor, media_source){
-                process_video(source_video(&self.file_path, self.width, self.height), self.frame_delay, apply_filter_chain, &self.filter_chain);
+                process_video(source_video(&self.file_path, self.width, self.height), self.frame_delay, apply_filter_chain, &self.filter_chain, media_output);
            } else {
                 println!("Error, media processor and media provider missmatch!");
                 exit(1);
