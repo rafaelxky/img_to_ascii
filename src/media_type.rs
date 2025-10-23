@@ -7,10 +7,9 @@ pub enum MediaType {
     Video(Decoder),
     Image(DynamicImage),
 }
-
-pub enum MediaProcessorType<'b> {
-    ImageProcessor(Box<dyn Fn(DynamicImage, Box<dyn Fn(&'b MediaProcessor<'b>, &mut DynamicImage)>)>),
-    VideoProcessor(Box<dyn Fn(Decoder, u64, Box<dyn Fn(&'b MediaProcessor<'b>, &mut DynamicImage)>)>),
+pub enum MediaProcessorType{
+    ImageProcessor(fn(DynamicImage, fn(&Vec<fn(&mut DynamicImage)>, &mut DynamicImage), &Vec<fn(&mut DynamicImage)>)),
+    VideoProcessor(fn(Decoder, u64, fn(&Vec<fn(&mut DynamicImage)>, &mut DynamicImage), &Vec<fn(&mut DynamicImage)>)),
 }
 
 pub enum MediaSourceType {
