@@ -7,18 +7,22 @@ use video_rs::{decode::Decoder, ffmpeg::media};
 
 use crate::{media_processor, media_type::{MediaProcessorType, MediaSourceType, MediaType}, utils::configs::CONFIG};
 
-type ApplyFilterChain = fn(&Vec<fn(&mut DynamicImage)>, &mut DynamicImage);
-type MediaOutput =  fn(&mut DynamicImage);
+pub type ApplyFilterChainFunc = fn(&Vec<fn(&mut DynamicImage)>, &mut DynamicImage);
+pub type MediaOutputFunc =  fn(&mut DynamicImage);
 
 pub struct MediaProcessor {
     pub file_path: String,
     pub width: u32,
     pub height: u32,
     pub frame_delay: u64,
+    // were the media comes from
     pub source_media: Option<MediaSourceType>,
+    // wrapper around apply filter chain function to controll its execution
     pub process_media: Option<MediaProcessorType>,
+    // the list of filters to apply
     pub filter_chain: Vec<fn(&mut DynamicImage)>,
-    pub media_output: Option<MediaOutput>,
+    // how to output the media
+    pub media_output: Option<MediaOutputFunc>,
 }
 
 impl MediaProcessor {
@@ -53,12 +57,12 @@ impl MediaProcessor {
         self.frame_delay = frame_delay;
         self
     }
-    pub fn with_process_image(&mut self, image_processor: fn(DynamicImage, ApplyFilterChain, &Vec<fn(&mut DynamicImage)>, MediaOutput)) -> &mut Self {
+    pub fn with_process_image(&mut self, image_processor: fn(DynamicImage, ApplyFilterChainFunc, &Vec<fn(&mut DynamicImage)>, MediaOutputFunc)) -> &mut Self {
         self.process_media = Some(MediaProcessorType::ImageProcessor(image_processor));
         self
     }
 
-    pub fn with_process_video(&mut self, video_processor: fn(Decoder, u64, ApplyFilterChain, &Vec<fn(&mut DynamicImage)>, MediaOutput)) -> &mut Self {
+    pub fn with_process_video(&mut self, video_processor: fn(Decoder, u64, ApplyFilterChainFunc, &Vec<fn(&mut DynamicImage)>, MediaOutputFunc)) -> &mut Self {
         self.process_media = Some(MediaProcessorType::VideoProcessor(video_processor));
         self
     }

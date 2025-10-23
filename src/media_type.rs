@@ -1,15 +1,15 @@
 use video_rs::decode::Decoder;
 use image::DynamicImage;
 
-use crate::media_processor::MediaProcessor;
+use crate::media_processor::{ApplyFilterChainFunc, MediaOutputFunc};
 
 pub enum MediaType {
     Video(Decoder),
     Image(DynamicImage),
 }
 pub enum MediaProcessorType{
-    ImageProcessor(fn(DynamicImage, fn(&Vec<fn(&mut DynamicImage)>, &mut DynamicImage), &Vec<fn(&mut DynamicImage)>, fn(&mut DynamicImage))),
-    VideoProcessor(fn(Decoder, u64, fn(&Vec<fn(&mut DynamicImage)>, &mut DynamicImage), &Vec<fn(&mut DynamicImage)>, fn(&mut DynamicImage))),
+    ImageProcessor(fn(DynamicImage, ApplyFilterChainFunc, &Vec<fn(&mut DynamicImage)>, MediaOutputFunc)),
+    VideoProcessor(fn(Decoder, u64, ApplyFilterChainFunc, &Vec<fn(&mut DynamicImage)>, MediaOutputFunc)),
 }
 
 
