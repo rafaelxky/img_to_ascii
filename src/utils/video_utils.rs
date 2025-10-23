@@ -1,29 +1,4 @@
-use std::path::Path;
-use std::thread;
-use std::time::Duration;
 use image::{DynamicImage, RgbImage};
-use video_rs::{DecoderBuilder, Resize};
-use video_rs::{Url};
-use video_rs::decode::Decoder;
-
-use crate::media_type::MediaType;
-
-
-#[allow(unused)]
-pub fn get_video_decoder(path: &str, width: u32, height: u32) -> MediaType {
-    let path = Path::new(path)
-        .canonicalize()
-        .expect(&format!("No such path {}", path));
-    video_rs::init().unwrap();
-
-    let url = Url::from_file_path(path)
-        .expect("Failed to convert to url");
-    
-     MediaType::Video(DecoderBuilder::new(url)
-        .with_resize(Resize::Fit(width, height))
-        .build().unwrap())
-}
-
 
 #[allow(unused)]
 pub fn frame_to_dynamic_image(frame: &ndarray::Array3<u8>) -> DynamicImage{
@@ -45,23 +20,6 @@ pub fn move_cursor_to_top_image(din_image: &DynamicImage){
 }
 
 #[allow(unused)]
-pub fn process_frames(decoder: &mut Decoder, sleep_millis: u64,  process_image: &Box<dyn for<'a> Fn(&'a mut DynamicImage)>) {
-
-    loop {
-        match decoder.decode() {
-            Ok((_, frame)) => {
-                let mut dimage = frame_to_dynamic_image(&frame);
-                process_image(&mut dimage);
-                move_cursor_to_top_image(&dimage);
-            }
-            Err(video_rs::Error::DecodeExhausted) => {
-                decoder.seek_to_start().unwrap();
-            }
-            Err(e) => {
-                eprintln!("Decode error: {:?}", e);
-                break;
-            }
-        }
-        thread::sleep(Duration::from_millis(sleep_millis));
-    }
+pub fn move_cursor_up(height: usize){
+    print!("\x1B[{}A", height);
 }

@@ -1,28 +1,33 @@
 use std::{fs::{self}, path::Path, process::exit};
 
-use crate::{filters::{ascii::image_to_ascii, colored_ascii::image_to_colored_ascii, marching_squares::image_to_marching_squares_ascii}, media_processor::MediaProcessor, utils::{configs::ARGS, img_utils::get_image, video_utils::{get_video_decoder, process_frames}}};
 use infer;
 use clap::{Parser, ValueEnum};
 use serde::{Deserialize, Serialize};
+use crate::{media::media_output::{ascii_output, colored_ascii_output, marching_squares_ascii_output}, utils::configs::ARGS};
+use crate::media::media_processor::MediaProcessor;
+use crate::media::media_process::{process_image,process_video};
+use crate::media::media_source::{get_image, get_video_decoder};
+
 
 #[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
-enum FilterOptions{
+pub enum OutputOptions{
     ASCII,
     MSquares,
     CAscii,
 }
 
 #[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
-enum FileType{
+pub enum MediaType{
     Unknown,
     Unsuported,
     Video,
     Image,
 }
 
+// todo: implement
 #[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
 #[allow(unused)]
-enum LocationType{
+pub enum LocationType{
     Local,
     Web,
 }
@@ -31,16 +36,21 @@ enum LocationType{
 #[command(version, about, long_about = None)]
 pub struct Args{
 
+    /// Media source path
     pub file_path: String,
+    /// Media resize width (defaut: terminal size)
     pub width: Option<u32>,
+    /// Media resize height (default: terminal size)
     pub height: Option<u32>,
-
+    /// Delay between frames in video (default: 50)
     #[arg(short = 'd', long)]
     pub frame_delay: Option<u64>,
-    
-    #[arg(short = 'f', long)]
-    pub filter_option: Option<FilterOptions>,
+    // filters
+    /// How to output the media
+    #[arg(short = 'o', long)]
+    pub output_option: Option<OutputOptions>,
 
+    /// Override custom configurations, can be donne manually in the config.json
     #[arg(short = 's', long)]
     pub set: Vec<String>,
 }
@@ -54,46 +64,52 @@ pub fn handle_args() {
         std::process::exit(1);
     }
 
+    // sources
+    // processors
     match get_file_type(mp.get_path()) {
-        FileType::Video => { 
-            mp.with_get_video_decoder(&get_video_decoder);
-            mp.with_process_video(&process_frames);
+        MediaType::Video => { 
+            mp.with_video_source(get_video_decoder);
+            mp.with_process_video(process_video);
         },
-        FileType::Image => { 
-            mp.with_get_image(&get_image);
+        MediaType::Image => { 
+            mp.with_image_source(get_image);
+            mp.with_process_image(process_image);
         },
-        FileType::Unknown => { 
+        MediaType::Unknown => { 
             println!("Error: filetype unknown!");
             exit(1);
         },
-        FileType::Unsuported => { 
+        MediaType::Unsuported => { 
             println!("Error, unsuported filetype!");
             exit(1);
         },
     }
 
-    match &ARGS.filter_option {
+    // output
+    match &ARGS.output_option {
         Some(filter) => {
             match filter {
-                FilterOptions::ASCII => {
-                    mp.with_process_image(&image_to_ascii);
+                OutputOptions::ASCII => {
+                    mp.with_output(ascii_output);
                 },
-                FilterOptions::CAscii => {
-                    mp.with_process_image(&image_to_colored_ascii);
+                OutputOptions::CAscii => {
+                    mp.with_output(colored_ascii_output);
                 },
-                FilterOptions::MSquares => {
-                    mp.with_process_image(&image_to_marching_squares_ascii);
+                OutputOptions::MSquares => {
+                    mp.with_output(marching_squares_ascii_output);
                 }
             }
         }, 
         None => {
-            mp.with_process_image(&image_to_ascii);
+            mp.with_output(ascii_output);
         }
     }
 
+    // frame delay
     if let Some(frame_delay) = ARGS.frame_delay {
         mp.with_frame_delay(frame_delay);
     }
+    // size
     if let Some(width) = ARGS.width {
         mp.with_width(width);   
     }
@@ -104,18 +120,18 @@ pub fn handle_args() {
     mp.execute();
 }
 
-fn get_file_type(file_path: &str) -> FileType {
+fn get_file_type(file_path: &str) -> MediaType {
     let data = fs::read(file_path).unwrap();
     if let Some(kind) = infer::get(&data) {
         if kind.mime_type().starts_with("image/") {
-            return FileType::Image;
+            return MediaType::Image;
         }
         if kind.mime_type().starts_with("video/") {
-            return FileType::Video;
+            return MediaType::Video;
         }
-        return FileType::Unsuported;
+        return MediaType::Unsuported;
     }
-    return FileType::Unknown;
+    return MediaType::Unknown;
 }
 
 fn file_exists(path: &str) -> bool{

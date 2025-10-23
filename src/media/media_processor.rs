@@ -1,14 +1,14 @@
 use std::{process::exit};
-
 use crossterm::terminal::size;
 use image::DynamicImage;
-use video_rs::{decode::Decoder, ffmpeg::media};
 
-
-use crate::{media_processor, media_type::{MediaProcessorType, MediaSourceType, MediaType}, utils::configs::CONFIG};
+use crate::{utils::configs::CONFIG};
+use crate::media::{media_type::*};
 
 pub type ApplyFilterChainFunc = fn(&Vec<fn(&mut DynamicImage)>, &mut DynamicImage);
 pub type MediaOutputFunc =  fn(&mut DynamicImage);
+pub type FilterFunc = fn(&mut DynamicImage);
+pub type FilterChainType =  Vec<FilterFunc>;
 
 pub struct MediaProcessor {
     pub file_path: String,
@@ -17,10 +17,11 @@ pub struct MediaProcessor {
     pub frame_delay: u64,
     // were the media comes from
     pub source_media: Option<MediaSourceType>,
-    // wrapper around apply filter chain function to controll its execution
+    // applies filter chain and controls the other functions execution
     pub process_media: Option<MediaProcessorType>,
     // the list of filters to apply
-    pub filter_chain: Vec<fn(&mut DynamicImage)>,
+    // todo: implement
+    pub filter_chain: FilterChainType,
     // how to output the media
     pub media_output: Option<MediaOutputFunc>,
 }
@@ -36,15 +37,16 @@ impl MediaProcessor {
             frame_delay: CONFIG.default_frame_delay,
             source_media: None,
             process_media: None,
-            media_output: None,
             filter_chain: Vec::new(),
+            media_output: None,
         }
     }
 
+    //path
     pub fn get_path(&self) -> &str {
         &self.file_path
     }
-
+    //sizes
     pub fn with_width(&mut self, width: u32) -> &mut Self {
         self.width = width;
         self
@@ -53,30 +55,46 @@ impl MediaProcessor {
         self.height = height;
         self
     }
+    // delay
     pub fn with_frame_delay(&mut self, frame_delay: u64) -> &mut Self {
         self.frame_delay = frame_delay;
         self
     }
-    pub fn with_process_image(&mut self, image_processor: fn(DynamicImage, ApplyFilterChainFunc, &Vec<fn(&mut DynamicImage)>, MediaOutputFunc)) -> &mut Self {
+    // sources 
+    pub fn with_image_source(&mut self, image_provider: ImageSourceFunc ) -> &mut Self{
+        self.source_media = Some(MediaSourceType::ImageSource(image_provider));
+        self
+    }
+    pub fn with_video_source(&mut self, video_decoder_provider: VideoSourceFunc) -> &mut Self {
+        self.source_media = Some(MediaSourceType::VideoSource(video_decoder_provider));
+        self
+    }
+    // processors
+    pub fn with_process_image(&mut self, image_processor: ImageProcessorFunc) -> &mut Self {
         self.process_media = Some(MediaProcessorType::ImageProcessor(image_processor));
         self
     }
 
-    pub fn with_process_video(&mut self, video_processor: fn(Decoder, u64, ApplyFilterChainFunc, &Vec<fn(&mut DynamicImage)>, MediaOutputFunc)) -> &mut Self {
+    pub fn with_process_video(&mut self, video_processor: VideoProcessorFunc) -> &mut Self {
         self.process_media = Some(MediaProcessorType::VideoProcessor(video_processor));
         self
     }
 
-    pub fn with_get_image(&mut self, image_provider: fn(&str, u32, u32) -> DynamicImage ) -> &mut Self{
-        self.source_media = Some(MediaSourceType::ImageSource(Box::from(image_provider)));
+    // filter chain
+    #[allow(unused)]
+    pub fn add_filter(&mut self, filter: FilterFunc) -> &mut Self{
+        self.filter_chain.push(filter);
         self
     }
-    pub fn with_get_video_decoder(&mut self, video_decoder_provider: fn(&str, u32, u32) -> Decoder) -> &mut Self {
-        self.source_media = Some(MediaSourceType::VideoSource(Box::from(video_decoder_provider)));
+
+    // output 
+    pub fn with_output(&mut self, media_output: MediaOutputFunc) -> &mut Self {
+        self.media_output = Some(media_output);
         self
     }
 
     pub fn execute(&mut self){
+        // if guards for none
        if self.source_media.is_none() {
             println!("Error, no media source provided!");
             exit(1);
@@ -104,12 +122,10 @@ impl MediaProcessor {
            }
        } 
     }
-
-    
 }
 
 pub fn apply_filter_chain(filter_chain: &Vec<fn(&mut DynamicImage)>, image: &mut  DynamicImage) {
-        filter_chain.iter().for_each(|filter| {
-            filter(image);
-        });
-    }
+    filter_chain.iter().for_each(|filter| {
+        filter(image);
+    });
+}
