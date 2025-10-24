@@ -12,8 +12,13 @@ pub fn ascii_output(image: &mut DynamicImage){
     let mut ascii = String::with_capacity(width * height + height);
 
     for y in 0..height {
-        for x in 0..width {
-            let gray = pixel_to_gray(&image.get_pixel(x as u32, y as u32));
+        for x in 0..width { 
+            let pixel = &image.get_pixel(x as u32, y as u32); 
+            if pixel[3] == 0 {
+                ascii.push(' ');
+                continue;
+            }
+            let gray = pixel_to_gray(pixel);
             let c = &get_lookup().0[gray as usize];
             ascii.push_str(c);
         }
