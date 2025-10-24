@@ -23,6 +23,7 @@ pub enum FilterOption{
     Blur,
     Gray,
     InvertColor,
+    Wave,
 }
 
 #[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
@@ -123,6 +124,9 @@ pub fn handle_args() {
             },
             FilterOption::InvertColor => {
                 mp.add_filter(invert_color);
+            },
+            FilterOption::Wave => {
+                mp.add_filter(wave);
             }
         }
     });

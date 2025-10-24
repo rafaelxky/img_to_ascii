@@ -3,6 +3,7 @@ use std::time::Duration;
 use image::DynamicImage;
 use video_rs::{decode::Decoder};
 use crate::media::media_processor::{ApplyFilterChainFunc, FilterChainType, MediaOutputFunc};
+use crate::utils::configs::FRAME_COUNTER;
 use crate::utils::video_utils::{frame_to_dynamic_image};
 
 /*
@@ -49,5 +50,7 @@ pub fn process_video(
             }
         }
         thread::sleep(Duration::from_millis(frame_delay));
+        let mut frame_counter = FRAME_COUNTER.lock().unwrap();
+        *frame_counter = *frame_counter + 1; 
     }
 }

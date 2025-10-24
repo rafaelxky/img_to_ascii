@@ -3,6 +3,7 @@ use once_cell::sync::Lazy;
 use serde_json::Value;
 use std::{fs};
 use serde::{Deserialize, Serialize};
+use std::sync::Mutex;
 
 use crate::cli_interface::Args;
 
@@ -13,6 +14,8 @@ pub struct Config {
     pub default_frame_delay: u64,
     pub selected_gradient: usize,
     pub blur_sigma: f32,
+    pub wave_amplitude: f32,
+    pub wave_frequency: f32,
 }
 
 fn read_config() -> Config {
@@ -50,4 +53,6 @@ pub static LOOKUP: Lazy<([String; 256], usize)> = Lazy::new(|| {
     }
     (table, chars.len())
 });
+
+pub static FRAME_COUNTER: Lazy<Mutex<usize>> = Lazy::new(| | Mutex::new(0));
 
