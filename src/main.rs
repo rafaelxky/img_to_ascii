@@ -10,6 +10,8 @@ fn main() {
     handle_args();
 }
 
-
-// todo: add filters to image such as distortion
-
+// todo:
+// add filter chain and output option for config so you can change the behaviour at runtime
+// same for width and height
+// implement support for 3d
+// filter like marching squares but with characters just to do outlines
