@@ -7,6 +7,7 @@ use std::sync::Mutex;
 use std::sync::Arc;
 use std::fs;
 use std::sync::RwLock;
+use std::thread;
 use std::time::Duration;
 use std::time::Instant;
 use once_cell::sync::Lazy;
@@ -71,9 +72,17 @@ fn reload_config() -> Result<(), Box<dyn Error>> {
 }
 
 fn reload_config_loop(){
-    match reload_config() {
-        Ok(()) => (),
-        Err(_) => reload_config_loop(), 
+    let mut tries = 0;
+    while tries <= 100 {
+        match reload_config() {
+            Ok(()) => {
+                reload_lookup();
+            },
+            Err(_) => {
+                tries += 1;
+            }, 
+        }
+        thread::sleep(Duration::from_millis(10));
     }
 }
 
@@ -103,8 +112,21 @@ pub static ARGS: Lazy<Args> = Lazy::new(|| {
     Args::parse()
 });
 
-pub static LOOKUP: Lazy<([String; 256], usize)> = Lazy::new(|| {
-    let chars: &Vec<String> = &get_config().gradients[get_config().selected_gradient];
+pub fn get_lookup() -> Arc<([String; 256], usize)> {
+    LOOKUP.read().expect("Error: could not get read on config").clone()
+}
+
+pub static LOOKUP: Lazy<RwLock<Arc<([String; 256], usize)>>> = Lazy::new(|| {
+    RwLock::new(Arc::new(build_lookup()))
+});
+
+fn build_lookup() -> ([String; 256], usize) {
+    let gradients = &get_config().gradients;
+    let mut selected_gradient = get_config().selected_gradient;
+    if selected_gradient >= gradients.len() {
+        selected_gradient = 0;
+    }
+    let chars: &Vec<String> = &gradients[selected_gradient];
 
     let mut table: [String; 256] = array_init::array_init(|_| String::new());
     for i in 0..256 {
@@ -115,7 +137,13 @@ pub static LOOKUP: Lazy<([String; 256], usize)> = Lazy::new(|| {
         table[i] = chars[index].clone();
     }
     (table, chars.len())
-});
+}
+
+fn reload_lookup() {
+    let new_lookup = build_lookup();
+    let mut lookup_write = LOOKUP.write().expect("Error: could not obtain write to LOOKUP");
+    *lookup_write = Arc::new(new_lookup);
+}
 
 pub static FRAME_COUNTER: Lazy<Mutex<usize>> = Lazy::new(| | Mutex::new(0));
 

@@ -183,3 +183,6 @@ fn get_file_type(file_path: &str) -> MediaType {
 fn file_exists(path: &str) -> bool{
     Path::new(path).exists()
 }
+
+// todo: add filter chain and output option for config so you can change the behaviour at runtime
+// same for width and height
