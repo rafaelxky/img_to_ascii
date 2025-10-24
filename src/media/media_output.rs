@@ -52,7 +52,7 @@ pub fn colored_ascii_output (image: &mut DynamicImage) {
 }
 
 pub fn marching_squares_ascii_output(image: &mut DynamicImage){
-    let tolerance = CONFIG.marching_squares_layers;
+    let tolerance = get_config().marching_squares_layers;
     let image_buffer = image.to_luma8();
     let mut result = String::with_capacity((image_buffer.height() * (image_buffer.width() + 1)) as usize);
 

@@ -36,7 +36,7 @@ impl MediaProcessor {
             file_path,
             width: (width - 5) as u32, 
             height: (height - 5) as u32,
-            frame_delay: CONFIG.default_frame_delay,
+            frame_delay: CONFIG.read().unwrap().default_frame_delay,
             source_media: None,
             process_media: None,
             filter_chain: Vec::new(),

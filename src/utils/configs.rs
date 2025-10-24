@@ -1,9 +1,19 @@
 use clap::Parser;
-use once_cell::sync::Lazy;
+use notify::EventKind;
 use serde_json::Value;
-use std::{fs};
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 use std::sync::Mutex;
+use std::sync::Arc;
+use std::fs;
+use std::sync::RwLock;
+use std::time::Duration;
+use std::time::Instant;
+use once_cell::sync::Lazy;
+use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use std::sync::mpsc::channel;
+use std::error::Error;
+
 
 use crate::cli_interface::Args;
 
@@ -23,7 +33,60 @@ fn read_config() -> Config {
     serde_json::from_str(&config_file).expect("Invalid Json")
 }
 
-pub static CONFIG: Lazy<Config> = Lazy::new(|| {
+pub fn get_config() -> Arc<Config> {
+    CONFIG.read().expect("Error: could not get read on config").clone()
+}
+
+pub fn watch_config() -> notify::Result<()> {
+    let (tx, rx) = channel();
+
+    let mut watcher: RecommendedWatcher = RecommendedWatcher::new(tx, notify::Config::default().with_poll_interval(Duration::from_millis(1000)))?;
+
+    watcher.watch(Path::new("config.json"), RecursiveMode::NonRecursive)?;
+
+    std::thread::spawn(move || {
+        let _watcher = watcher;
+        for event in rx {
+            if let Ok(ev) = event {
+                if matches!(ev.kind, EventKind::Modify(_)) {
+                    reload_config_loop();
+                }
+            }
+        }
+    });
+
+    Ok(())
+}
+
+fn reload_config() -> Result<(), Box<dyn Error>> {
+    let config_file =  &fs::read_to_string("config.json").expect("Error: missing json config");
+    let mut config_value: Value = serde_json::from_str(config_file)?; 
+
+   apply_config_overrides(&mut config_value);
+
+    let new_config = serde_json::from_value(config_value)?;
+    let mut cfg = CONFIG.write().expect("Error: could not obtain write to CONFIG");
+    *cfg = Arc::new(new_config);
+    Ok(())
+}
+
+fn reload_config_loop(){
+    match reload_config() {
+        Ok(()) => (),
+        Err(_) => reload_config_loop(), 
+    }
+}
+
+fn apply_config_overrides(config: &mut Value){
+    for kv in &ARGS.set {
+        if let Some((key, val)) = kv.replace(' ', "").split_once('=') {
+            let val_json = serde_json::from_str(val).unwrap_or(Value::String(val.to_string()));
+            config[key] = val_json;
+        } 
+    }
+}
+
+pub static CONFIG: Lazy<RwLock<Arc<Config>>> = Lazy::new(|| {
     let mut value = serde_json::to_value(read_config()).unwrap();
 
     for kv in &ARGS.set {
@@ -33,7 +96,7 @@ pub static CONFIG: Lazy<Config> = Lazy::new(|| {
         } 
     }
 
-    serde_json::from_value(value).unwrap()
+    RwLock::new(Arc::new(serde_json::from_value(value).unwrap()))
 });
 
 pub static ARGS: Lazy<Args> = Lazy::new(|| {
@@ -41,7 +104,7 @@ pub static ARGS: Lazy<Args> = Lazy::new(|| {
 });
 
 pub static LOOKUP: Lazy<([String; 256], usize)> = Lazy::new(|| {
-    let chars: &Vec<String> = &CONFIG.gradients[CONFIG.selected_gradient];
+    let chars: &Vec<String> = &get_config().gradients[get_config().selected_gradient];
 
     let mut table: [String; 256] = array_init::array_init(|_| String::new());
     for i in 0..256 {

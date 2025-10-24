@@ -35,5 +35,5 @@ pub fn get_video_decoder(path: &str, width: u32, height: u32, resize_type: &Resi
 
 #[allow(unused)]
 pub fn get_image(path: &str, width: u32, height: u32, resize_type: &ResizeType) -> DynamicImage {
-    scale_image(image::open(path).expect("Error, could not get image!"), width, height, resize_type)
+    scale_image(image::open(path).expect("Error, could not get image!"), width, height,resize_type)
 } 

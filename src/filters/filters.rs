@@ -1,7 +1,7 @@
 
 use image::{DynamicImage, GenericImage, GenericImageView};
 
-use crate::utils::configs::{CONFIG, FRAME_COUNTER};
+use crate::utils::configs::{get_config, CONFIG, FRAME_COUNTER};
 
 pub fn rotate90(image: &mut DynamicImage){
     *image = image.rotate90();
@@ -12,7 +12,7 @@ pub fn rotate180(image: &mut DynamicImage){
 }
 
 pub fn blur(image: &mut DynamicImage){
-    *image = image.blur(CONFIG.blur_sigma);
+    *image = image.blur(get_config().blur_sigma);
 }
 
 pub fn gray(image: &mut DynamicImage){
@@ -30,8 +30,8 @@ pub fn wave(image: &mut DynamicImage) {
     let height = image.height();
 
     for y in 0..height {
-        let wave_amplitude: f32 = CONFIG.wave_amplitude;  
-        let wave_frequency: f32 = CONFIG.wave_frequency;   
+        let wave_amplitude: f32 = get_config().wave_amplitude;  
+        let wave_frequency: f32 = get_config().wave_frequency;   
         let offset = ((y as f32 * wave_frequency + *counter as f32 * 0.1).sin() * wave_amplitude) as i32;
 
         for x in 0..width {
