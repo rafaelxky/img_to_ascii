@@ -26,6 +26,7 @@ pub struct Config {
     pub blur_sigma: f32,
     pub wave_amplitude: f32,
     pub wave_frequency: f32,
+    pub color: [i16; 3],
 }
 
 fn read_config() -> Config {

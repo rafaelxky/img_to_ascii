@@ -7,16 +7,14 @@ use crate::utils::marching_squares_utils::get_marching_squares_case;
 
 pub fn ascii_output(image: &mut DynamicImage){
 
-    let gray_image = simd_gray_image(image).to_rgba8();
-    let width = gray_image.width() as usize;
-    let height = gray_image.height() as usize;
+    let width = image.width() as usize;
+    let height = image.height() as usize;
     let mut ascii = String::with_capacity(width * height + height);
 
     for y in 0..height {
         for x in 0..width {
-            let pixel = gray_image.get_pixel(x as u32, y as u32);
-            let gray = pixel[0];
-            let c = if pixel[3] == 0 { " " } else { &get_lookup().0[gray as usize] };
+            let gray = pixel_to_gray(&image.get_pixel(x as u32, y as u32));
+            let c = &get_lookup().0[gray as usize];
             ascii.push_str(c);
         }
         ascii.push('\n');
@@ -40,7 +38,7 @@ pub fn colored_ascii_output (image: &mut DynamicImage) {
                 continue;
             }
             let gray = pixel_to_gray(&pixel);
-            let c = if gray == 0 { " " } else { &get_lookup().0[gray as usize] };
+            let c = &get_lookup().0[gray as usize];
             write!(buffer, "\x1b[38;2;{};{};{}m{}\x1b[0m",pixel[0],pixel[1],pixel[2],c).unwrap();
         }
         writeln!(buffer).unwrap();
