@@ -1,7 +1,7 @@
 
 use image::{DynamicImage, GenericImage, GenericImageView,Rgba,Rgb};
 
-use crate::utils::configs::{get_config,FRAME_COUNTER};
+use crate::utils::{configs::{get_config,FRAME_COUNTER}, img_utils::simd_gray_image};
 
 pub fn rotate90(image: &mut DynamicImage){
     *image = image.rotate90();
@@ -16,7 +16,7 @@ pub fn blur(image: &mut DynamicImage){
 }
 
 pub fn gray(image: &mut DynamicImage){
-    *image = image.grayscale();
+    simd_gray_image(image);
 }
 
 pub fn invert_color(image: &mut DynamicImage){
@@ -45,7 +45,7 @@ pub fn wave(image: &mut DynamicImage) {
 }
 
 pub fn color(image: &mut DynamicImage){
-    let image = image.as_mut_rgb8().unwrap();
+    let image = image.as_mut_rgba8().unwrap();
     let color = get_config().color;
     let width = image.width();
     let height = image.height();
@@ -56,11 +56,12 @@ pub fn color(image: &mut DynamicImage){
             let r: u8 = (pixel[0] as i16 + color[0] as i16).clamp(0, 255) as u8;
             let g: u8 = (pixel[1] as i16 + color[1] as i16).clamp(0, 255) as u8;
             let b: u8 = (pixel[2] as i16 + color[2] as i16).clamp(0, 255) as u8;
-            image.put_pixel(x, y, Rgb(
+            image.put_pixel(x, y, Rgba(
                 [
                     r,
                     g,
-                    b
+                    b,
+                    pixel[3]
                 ]
             ));
         }   

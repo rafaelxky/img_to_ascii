@@ -1,4 +1,4 @@
-use image::{imageops::FilterType, DynamicImage, Rgba};
+use image::{imageops::FilterType, DynamicImage, Rgba, RgbaImage};
 use wide::f32x8;
 
 use crate::media::media_type::ResizeType;
@@ -36,8 +36,16 @@ pub fn pixel_to_gray(pixel: &Rgba<u8>) -> u8 {
 }
 
 #[allow(unused)]
-pub fn simd_gray_image(image: &mut DynamicImage) -> DynamicImage {
-    let mut img = image.to_rgba8();
+pub fn simd_gray_image(image: &mut DynamicImage) {
+
+    let img: &mut RgbaImage = match image.as_mut_rgba8() {
+        Some(buf) => buf,
+        None => {
+            *image = DynamicImage::ImageRgba8(image.to_rgba8());
+            image.as_mut_rgba8().unwrap()
+        }
+    };
+
     let pixels = img.as_mut(); 
 
     let len = pixels.len();
@@ -88,7 +96,5 @@ pub fn simd_gray_image(image: &mut DynamicImage) -> DynamicImage {
         pixels[i + 2] = luma;
         i += 4;
     }
-
-    DynamicImage::ImageRgba8(img)
 }
 
