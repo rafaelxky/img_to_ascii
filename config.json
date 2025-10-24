@@ -8,5 +8,6 @@
     ]],
     "selected_gradient": 0,
     "marching_squares_layers": 3,
-    "default_frame_delay": 50
+    "default_frame_delay": 50,
+    "blur_sigma": 2
 }

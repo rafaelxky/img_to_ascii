@@ -1,9 +1,14 @@
 use image::{imageops::FilterType, DynamicImage, Rgba};
 use wide::f32x8;
 
+use crate::media::media_type::ResizeType;
+
 #[allow(unused)]
-pub fn scale_image( image: DynamicImage, width: u32, height: u32) -> DynamicImage {
-    image.resize(width, height, FilterType::Lanczos3)
+pub fn scale_image( image: DynamicImage, width: u32, height: u32, resize_type: &ResizeType) -> DynamicImage {
+    match resize_type {
+        ResizeType::Fit => image.resize(width, height, FilterType::Lanczos3),
+        ResizeType::Exact => image.resize_exact(width, height, FilterType::Lanczos3),
+    }
 }
 
 #[allow(unused)]

@@ -12,6 +12,7 @@ pub struct Config {
     pub marching_squares_layers: u8,
     pub default_frame_delay: u64,
     pub selected_gradient: usize,
+    pub blur_sigma: f32,
 }
 
 fn read_config() -> Config {
@@ -23,7 +24,7 @@ pub static CONFIG: Lazy<Config> = Lazy::new(|| {
     let mut value = serde_json::to_value(read_config()).unwrap();
 
     for kv in &ARGS.set {
-        if let Some((key, val)) = kv.split_once('=') {
+        if let Some((key, val)) = kv.replace(' ', "").split_once('=') {
             let val_json = serde_json::from_str(val).unwrap_or(Value::String(val.to_string()));
             value[key] = val_json;
         } 

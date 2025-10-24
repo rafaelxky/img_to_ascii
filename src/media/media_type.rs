@@ -2,9 +2,11 @@ use video_rs::decode::Decoder;
 use image::DynamicImage;
 
 use crate::media::media_processor::{ApplyFilterChainFunc, FilterChainType, MediaOutputFunc};
+use clap::{ValueEnum};
+use serde::{Deserialize, Serialize};
 
-pub type ImageSourceFunc = fn(&str, u32, u32) -> DynamicImage;
-pub type VideoSourceFunc = fn(&str, u32, u32) -> Decoder;
+pub type ImageSourceFunc = fn(&str, u32, u32, &ResizeType) -> DynamicImage;
+pub type VideoSourceFunc = fn(&str, u32, u32, &ResizeType) -> Decoder;
 pub type ImageProcessorFunc = fn(DynamicImage, ApplyFilterChainFunc, &FilterChainType, MediaOutputFunc);
 pub type VideoProcessorFunc = fn(Decoder, u64, ApplyFilterChainFunc, &FilterChainType, MediaOutputFunc);
 
@@ -16,4 +18,10 @@ pub enum MediaProcessorType{
 pub enum MediaSourceType {
     ImageSource(ImageSourceFunc),
     VideoSource(VideoSourceFunc),
+}
+
+#[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
+pub enum ResizeType{
+    Fit,
+    Exact,
 }

@@ -2,6 +2,7 @@ use std::{process::exit};
 use crossterm::terminal::size;
 use image::DynamicImage;
 
+use crate::media::media_output::ascii_output;
 use crate::{utils::configs::CONFIG};
 use crate::media::{media_type::*};
 
@@ -15,6 +16,7 @@ pub struct MediaProcessor {
     pub width: u32,
     pub height: u32,
     pub frame_delay: u64,
+    pub resize_type: ResizeType,
     // were the media comes from
     pub source_media: Option<MediaSourceType>,
     // applies filter chain and controls the other functions execution
@@ -38,14 +40,22 @@ impl MediaProcessor {
             source_media: None,
             process_media: None,
             filter_chain: Vec::new(),
-            media_output: None,
+            media_output: Some(ascii_output),
+            resize_type: ResizeType::Fit,
         }
     }
+
 
     //path
     pub fn get_path(&self) -> &str {
         &self.file_path
     }
+
+    pub fn with_resize_type(&mut self, resize_type: ResizeType) -> &mut Self{
+        self.resize_type = resize_type;
+        self
+    }
+
     //sizes
     pub fn with_width(&mut self, width: u32) -> &mut Self {
         self.width = width;
@@ -111,11 +121,11 @@ impl MediaProcessor {
        if let (Some(media_processor), Some(media_source), Some(media_output)) = (&self.process_media, &self.source_media, self.media_output){
             // image
            if let (MediaProcessorType::ImageProcessor(process_image), MediaSourceType::ImageSource(source_image)) = (media_processor, media_source){
-                process_image(source_image(&self.file_path, self.width, self.height), apply_filter_chain, &self.filter_chain, media_output);
+                process_image(source_image(&self.file_path, self.width, self.height, &self.resize_type), apply_filter_chain, &self.filter_chain, media_output);
            } else  
            // video
            if let (MediaProcessorType::VideoProcessor(process_video), MediaSourceType::VideoSource(source_video)) = (media_processor, media_source){
-                process_video(source_video(&self.file_path, self.width, self.height), self.frame_delay, apply_filter_chain, &self.filter_chain, media_output);
+                process_video(source_video(&self.file_path, self.width, self.height, &self.resize_type), self.frame_delay, apply_filter_chain, &self.filter_chain, media_output);
            } else {
                 println!("Error, media processor and media provider missmatch!");
                 exit(1);

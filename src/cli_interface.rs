@@ -3,17 +3,26 @@ use std::{fs::{self}, path::Path, process::exit};
 use infer;
 use clap::{Parser, ValueEnum};
 use serde::{Deserialize, Serialize};
-use crate::{media::media_output::{ascii_output, colored_ascii_output, marching_squares_ascii_output}, utils::configs::ARGS};
+use crate::{media::{media_output::{ascii_output, colored_ascii_output, marching_squares_ascii_output}, media_type::ResizeType}, utils::configs::ARGS};
 use crate::media::media_processor::MediaProcessor;
 use crate::media::media_process::{process_image,process_video};
 use crate::media::media_source::{get_image, get_video_decoder};
-
+use crate::filters::filters::*;
 
 #[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
 pub enum OutputOptions{
     ASCII,
     MSquares,
     CAscii,
+}
+
+#[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
+pub enum FilterOption{
+    Rotate90,
+    Rotate180,
+    Blur,
+    Gray,
+    InvertColor,
 }
 
 #[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
@@ -45,10 +54,15 @@ pub struct Args{
     /// Delay between frames in video (default: 50)
     #[arg(short = 'd', long)]
     pub frame_delay: Option<u64>,
-    // filters
+    /// Type of image resize (default: fit)
+    #[arg(short = 'r', long)]
+    pub resize_type: Option<ResizeType>, 
     /// How to output the media
     #[arg(short = 'o', long)]
     pub output_option: Option<OutputOptions>,
+    /// Filters list to apply to media
+    #[arg(short = 'f', long)]
+    pub filters: Vec<FilterOption>,
 
     /// Override custom configurations, can be donne manually in the config.json
     #[arg(short = 's', long)]
@@ -84,6 +98,34 @@ pub fn handle_args() {
             exit(1);
         },
     }
+
+    // resize_type
+    if let Some(resize_type) = &ARGS.resize_type {
+        mp.with_resize_type(resize_type.clone());
+    } else {
+        mp.with_resize_type(ResizeType::Fit);
+    }
+
+    // filters
+    ARGS.filters.iter().for_each(|filter| {
+        match filter {
+            FilterOption::Rotate90 => {
+                mp.add_filter(rotate90);
+            },
+            FilterOption::Rotate180 => {
+                mp.add_filter(rotate180);
+            },
+            FilterOption::Blur => {
+                mp.add_filter(blur);
+            },
+            FilterOption::Gray => {
+                mp.add_filter(gray);
+            },
+            FilterOption::InvertColor => {
+                mp.add_filter(invert_color);
+            }
+        }
+    });
 
     // output
     match &ARGS.output_option {
