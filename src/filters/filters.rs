@@ -1,7 +1,7 @@
 
 use image::{DynamicImage, GenericImage, GenericImageView};
 
-use crate::utils::configs::{get_config, CONFIG, FRAME_COUNTER};
+use crate::utils::configs::{get_config,FRAME_COUNTER};
 
 pub fn rotate90(image: &mut DynamicImage){
     *image = image.rotate90();

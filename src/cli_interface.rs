@@ -2,8 +2,9 @@ use std::{fs::{self}, path::Path, process::exit};
 
 use infer;
 use clap::{Parser, ValueEnum};
+use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
-use crate::{media::{media_output::{ascii_output, colored_ascii_output, marching_squares_ascii_output}, media_type::ResizeType}, utils::configs::ARGS};
+use crate::{media::{media_output::{ascii_output, colored_ascii_output, marching_squares_ascii_output}, media_source::{get_online_image, get_online_video}, media_type::ResizeType}, utils::configs::ARGS};
 use crate::media::media_processor::MediaProcessor;
 use crate::media::media_process::{process_image,process_video};
 use crate::media::media_source::{get_image, get_video_decoder};
@@ -32,6 +33,8 @@ pub enum MediaType{
     Unsuported,
     Video,
     Image,
+    UrlVideo,
+    UrlImage,
 }
 
 // todo: implement
@@ -74,7 +77,7 @@ pub fn handle_args() {
     let mut mp = MediaProcessor::new(ARGS.file_path.clone());
     let path = mp.get_path();
 
-    if !file_exists(path) {
+    if !file_exists(path) && !url_exists(path) {
         println!("Error: file {} not found", path);
         std::process::exit(1);
     }
@@ -90,6 +93,14 @@ pub fn handle_args() {
             mp.with_image_source(get_image);
             mp.with_process_image(process_image);
         },
+        MediaType::UrlImage => {
+            mp.with_image_source(get_online_image);
+            mp.with_process_image(process_image);
+        },
+        MediaType::UrlVideo => {
+            mp.with_video_source(get_online_video);
+            mp.with_process_video(process_video);
+        }
         MediaType::Unknown => { 
             println!("Error: filetype unknown!");
             exit(1);
@@ -166,7 +177,27 @@ pub fn handle_args() {
     mp.execute();
 }
 
+// gets file type
 fn get_file_type(file_path: &str) -> MediaType {
+    if file_path.starts_with("http") {
+        let client = Client::new();
+        let response = client.head(file_path).send();
+        if let Ok(response) = response {
+            let file_type = response.headers().get("content-type").map(|v| v.to_str().ok()).flatten().map(String::from);
+            if let Some(file_type) = file_type {
+                if file_type.starts_with("video") || file_type.ends_with("gif") {
+                    return MediaType::UrlVideo;
+                } else 
+                if file_type.starts_with("image"){
+                    return MediaType::UrlImage;
+                } else {
+                    return MediaType::Unsuported;
+                }
+            }
+        }
+        return MediaType::Unknown;
+    }
+
     let data = fs::read(file_path).unwrap();
     if let Some(kind) = infer::get(&data) {
         if kind.mime_type().starts_with("image/") {
@@ -184,5 +215,13 @@ fn file_exists(path: &str) -> bool{
     Path::new(path).exists()
 }
 
-// todo: add filter chain and output option for config so you can change the behaviour at runtime
-// same for width and height
+fn url_exists(url: &str) -> bool {
+    let client = reqwest::blocking::Client::new();
+    let response = client.head(url).send();
+    if let Ok(response) = response {
+        return response.status().is_success()
+    } else {
+        println!("Error: unable to fetch URL");
+        exit(1);
+    }
+}

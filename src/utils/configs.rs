@@ -9,7 +9,6 @@ use std::fs;
 use std::sync::RwLock;
 use std::thread;
 use std::time::Duration;
-use std::time::Instant;
 use once_cell::sync::Lazy;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::sync::mpsc::channel;

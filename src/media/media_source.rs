@@ -1,5 +1,7 @@
+use reqwest::blocking::{Client};
+use std::io::Cursor;
 use std::path::Path;
-use image::{DynamicImage};
+use image::{DynamicImage, ImageReader};
 use video_rs::{DecoderBuilder, Resize};
 use video_rs::{Url};
 use video_rs::decode::Decoder;
@@ -37,3 +39,23 @@ pub fn get_video_decoder(path: &str, width: u32, height: u32, resize_type: &Resi
 pub fn get_image(path: &str, width: u32, height: u32, resize_type: &ResizeType) -> DynamicImage {
     scale_image(image::open(path).expect("Error, could not get image!"), width, height,resize_type)
 } 
+
+pub fn get_online_image(path: &str, width: u32, height: u32, resize_type: &ResizeType) -> DynamicImage {
+    let client = Client::new();
+    let resp = client.get(path).send().unwrap();
+    let bytes = resp.bytes().unwrap();
+    scale_image(
+        ImageReader::new(Cursor::new(bytes))
+    .with_guessed_format().unwrap()
+    .decode().unwrap()
+    , width, height, resize_type)
+}
+
+pub fn get_online_video(url: &str, width: u32, height: u32, resize_type: &ResizeType) -> Decoder {
+     let mut decoder_builder = DecoderBuilder::new(Url::parse(url).unwrap());
+    decoder_builder = match resize_type {
+        ResizeType::Exact => decoder_builder.with_resize(Resize::Exact(width, height)),
+        ResizeType::Fit => decoder_builder.with_resize(Resize::Fit(width, height)),
+    };
+    decoder_builder.build().unwrap()
+}

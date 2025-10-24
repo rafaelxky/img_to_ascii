@@ -4,7 +4,7 @@ use image::DynamicImage;
 use video_rs::{decode::Decoder};
 use crate::media::media_processor::{ApplyFilterChainFunc, FilterChainType, MediaOutputFunc};
 use crate::utils::configs::FRAME_COUNTER;
-use crate::utils::video_utils::{frame_to_dynamic_image};
+use crate::utils::video_utils::{frame_to_dynamic_image, move_cursor_up};
 
 /*
 pub enum MediaProcessorType{
@@ -40,6 +40,7 @@ pub fn process_video(
                 let mut dimage = frame_to_dynamic_image(&frame);
                 apply_filter_chain(filter_chain, &mut dimage);
                 output_media(&mut dimage);
+                move_cursor_up(dimage.height() as usize);
             }
             Err(video_rs::Error::DecodeExhausted) => {
                 decoder.seek_to_start().unwrap();

@@ -4,7 +4,6 @@ use image::{DynamicImage, GenericImageView};
 use crate::utils::configs::*;
 use crate::utils::img_utils::{pixel_to_gray, simd_gray_image};
 use crate::utils::marching_squares_utils::get_marching_squares_case;
-use crate::utils::video_utils::{move_cursor_to_top_image, move_cursor_up};
 
 pub fn ascii_output(image: &mut DynamicImage){
 
@@ -24,7 +23,6 @@ pub fn ascii_output(image: &mut DynamicImage){
     }
 
     print!("{}", ascii);
-    move_cursor_to_top_image(image);
     use std::io::Write;
     std::io::stdout().flush().unwrap();
 }
@@ -48,7 +46,6 @@ pub fn colored_ascii_output (image: &mut DynamicImage) {
         writeln!(buffer).unwrap();
     }
     buffer.flush().unwrap();
-    move_cursor_up(height);
 }
 
 pub fn marching_squares_ascii_output(image: &mut DynamicImage){
@@ -69,5 +66,4 @@ pub fn marching_squares_ascii_output(image: &mut DynamicImage){
         result.push('\n');
     }
     println!("{}", result);
-    move_cursor_to_top_image(image);
 }
