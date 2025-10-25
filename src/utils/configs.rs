@@ -145,5 +145,8 @@ fn reload_lookup() {
     *lookup_write = Arc::new(new_lookup);
 }
 
+pub fn get_frame_counter() -> usize {
+    return *FRAME_COUNTER.lock().unwrap();
+}
 pub static FRAME_COUNTER: Lazy<Mutex<usize>> = Lazy::new(| | Mutex::new(0));
 

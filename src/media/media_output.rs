@@ -1,5 +1,7 @@
+use std::char;
 use std::io::{BufWriter, Write};
 use image::{DynamicImage, GenericImageView};
+use video_rs::frame;
 
 use crate::utils::configs::*;
 use crate::utils::img_utils::{pixel_to_gray, simd_gray_image};
@@ -69,4 +71,28 @@ pub fn marching_squares_ascii_output(image: &mut DynamicImage){
         result.push('\n');
     }
     println!("{}", result);
+}
+
+pub fn text_color_ascii_output (image: &mut DynamicImage) {
+    let width = image.width() as usize;
+    let height = image.height() as usize;
+    let mut buffer = BufWriter::new(std::io::stdout());
+
+    let gradient_str = &get_config().gradients[get_config().selected_gradient].join("");
+    let gradient_chars: Vec<char> = gradient_str.chars().collect();
+    let gradient_len = gradient_chars.len();
+
+    for y in 0..height {
+        for x in 0..width {
+            let pixel = image.get_pixel( x as u32, y as u32);
+            if pixel[3] == 0 {
+                write!(buffer, " ").unwrap();
+                continue;
+            }
+            let c: char = gradient_chars[((width * y) + x) % gradient_len];
+            write!(buffer, "\x1b[38;2;{};{};{}m{}\x1b[0m",pixel[0],pixel[1],pixel[2],c).unwrap();
+        }
+        writeln!(buffer).unwrap();
+    }
+    buffer.flush().unwrap();
 }

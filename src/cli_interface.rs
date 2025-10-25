@@ -4,7 +4,7 @@ use infer;
 use clap::{Parser, ValueEnum};
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
-use crate::{media::{media_output::{ascii_output, colored_ascii_output, marching_squares_ascii_output}, media_source::{get_online_image, get_online_video}, media_type::ResizeType}, utils::configs::ARGS};
+use crate::{media::{media_output::{ascii_output, colored_ascii_output, marching_squares_ascii_output, text_color_ascii_output}, media_source::{get_online_image, get_online_video}, media_type::ResizeType}, utils::configs::ARGS};
 use crate::media::media_processor::MediaProcessor;
 use crate::media::media_process::{process_image,process_video};
 use crate::media::media_source::{get_image, get_video_decoder};
@@ -15,6 +15,7 @@ pub enum OutputOptions{
     ASCII,
     MSquares,
     CAscii,
+    Text,
 }
 
 #[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
@@ -158,6 +159,9 @@ pub fn handle_args() {
                 },
                 OutputOptions::MSquares => {
                     mp.with_output(marching_squares_ascii_output);
+                },
+                OutputOptions::Text => {
+                    mp.with_output(text_color_ascii_output);
                 }
             }
         }, 
