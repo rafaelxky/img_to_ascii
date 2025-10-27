@@ -18,3 +18,6 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.145"
 video-rs = {version = "0.10.5", features = ["ndarray"] }
 wide = "0.8.1"
+
+[profile.release]
+debug = false
