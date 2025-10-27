@@ -79,8 +79,8 @@ pub fn handle_args() {
     let mut mp = MediaProcessor::new(ARGS.file_path.clone());
     let path = mp.get_path();
 
-    if !file_exists(path) && !url_exists(path) {
-        println!("Error: file {} not found", path);
+    if !file_exists(path) && !url_exists(path){
+        println!("Error: {} not found", path);
         std::process::exit(1);
     }
 
@@ -229,7 +229,6 @@ fn url_exists(url: &str) -> bool {
     if let Ok(response) = response {
         return response.status().is_success()
     } else {
-        println!("Error: unable to fetch URL");
-        exit(1);
+        return false;
     }
 }

@@ -1,7 +1,7 @@
 
 use image::{DynamicImage, GenericImage, GenericImageView,Rgba};
 
-use crate::utils::{configs::{get_config,FRAME_COUNTER}, img_utils::simd_gray_image};
+use crate::utils::{configs::{get_config, get_frame_counter}, img_utils::simd_gray_image};
 
 pub fn rotate90(image: &mut DynamicImage){
     *image = image.rotate90();
@@ -25,14 +25,14 @@ pub fn invert_color(image: &mut DynamicImage){
 
 pub fn wave(image: &mut DynamicImage) {
     let mut image_buffer = DynamicImage::new_rgba8(image.width(), image.height());
-    let counter = FRAME_COUNTER.lock().unwrap();
+    let counter = get_frame_counter();
     let width = image.width() as i32;
     let height = image.height();
 
     for y in 0..height {
         let wave_amplitude: f32 = get_config().wave_amplitude;  
         let wave_frequency: f32 = get_config().wave_frequency;   
-        let offset = ((y as f32 * wave_frequency + *counter as f32 * 0.1).sin() * wave_amplitude) as i32;
+        let offset = ((y as f32 * wave_frequency + counter as f32 * 0.1).sin() * wave_amplitude) as i32;
 
         for x in 0..width {
             let target_x = (x + offset).rem_euclid(width); 

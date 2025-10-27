@@ -1,10 +1,9 @@
 use std::char;
 use std::io::{BufWriter, Write};
 use image::{DynamicImage, GenericImageView};
-use video_rs::frame;
 
 use crate::utils::configs::*;
-use crate::utils::img_utils::{pixel_to_gray, simd_gray_image};
+use crate::utils::img_utils::{pixel_to_gray};
 use crate::utils::marching_squares_utils::get_marching_squares_case;
 
 pub fn ascii_output(image: &mut DynamicImage){
