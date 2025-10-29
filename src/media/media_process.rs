@@ -1,3 +1,4 @@
+use std::process::exit;
 use std::thread;
 use std::time::Duration;
 use image::DynamicImage;
@@ -43,7 +44,16 @@ pub fn process_video(
                 move_cursor_up(dimage.height() as usize);
             }
             Err(video_rs::Error::DecodeExhausted) => {
-                decoder.seek_to_start().unwrap();
+                match decoder.seek_to_start(){
+                    Ok(_) => {
+                        
+                    },
+                    Err(_) => {
+                        #[cfg(debug_assertions)]
+                        println!("Error: could not restart pointer!");   
+                        exit(1);
+                    }
+                }
             }
             Err(e) => {
                 eprintln!("Decode error: {:?}", e);
@@ -51,7 +61,14 @@ pub fn process_video(
             }
         }
         thread::sleep(Duration::from_millis(frame_delay));
-        let mut frame_counter = FRAME_COUNTER.lock().unwrap();
+        let mut frame_counter = match FRAME_COUNTER.lock(){
+            Ok(frame_counter) => frame_counter,
+            Err(poisoned) => {
+                #[cfg(debug_assertions)]
+                println!("Error: could not obtain lock on FRAME_COUNTER!");
+                poisoned.into_inner()
+            } 
+        };
         *frame_counter = *frame_counter + 1; 
     }
 }

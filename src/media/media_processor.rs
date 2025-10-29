@@ -31,12 +31,30 @@ pub struct MediaProcessor {
 impl MediaProcessor {
 
   pub fn new(file_path: String) -> Self {
-    let (width, height) = size().unwrap();
+    let (mut width, mut height) = (100, 100);
+
+    if let Ok((width_result, height_result)) = size() {
+        width = width_result;
+        height = height_result;
+    } else {
+        #[cfg(debug_assertions)]
+        println!("Error: could not determine terminal size!");
+    }
+
+    let mut frame_delay = 50;
+
+    if let Ok(config) = CONFIG.read() {
+        frame_delay = config.default_frame_delay;
+    } else {
+        #[cfg(debug_assertions)]
+        println!("Error: could not obtain read lock on config in MediaProcessor initialisation!");
+    }
+
         Self {
             file_path,
             width: (width - 5) as u32, 
             height: (height - 5) as u32,
-            frame_delay: CONFIG.read().unwrap().default_frame_delay,
+            frame_delay: frame_delay,
             source_media: None,
             process_media: None,
             filter_chain: Vec::new(),

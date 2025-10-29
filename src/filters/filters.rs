@@ -1,5 +1,5 @@
 
-use image::{DynamicImage, GenericImage, GenericImageView,Rgba};
+use image::{DynamicImage, GenericImage, GenericImageView, ImageBuffer, Rgba, RgbaImage};
 
 use crate::utils::{configs::{get_config, get_frame_counter}, img_utils::simd_gray_image};
 
@@ -45,7 +45,16 @@ pub fn wave(image: &mut DynamicImage) {
 }
 
 pub fn color(image: &mut DynamicImage){
-    let image = image.as_mut_rgba8().unwrap();
+    
+    let image: &mut ImageBuffer<Rgba<u8>, Vec<u8>> = match image.as_mut_rgba8() {
+        Some(image_rgba8) => {
+            image_rgba8
+        }, 
+        None => {
+            &mut image.to_rgba8()
+        }
+    };
+
     let color = get_config().color;
     let width = image.width();
     let height = image.height();

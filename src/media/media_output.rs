@@ -28,7 +28,7 @@ pub fn ascii_output(image: &mut DynamicImage){
 
     print!("{}", ascii);
     use std::io::Write;
-    std::io::stdout().flush().unwrap();
+    std::io::stdout().flush().expect("Error: could not flush stdout!");
 }
 
 pub fn colored_ascii_output (image: &mut DynamicImage) {
@@ -40,16 +40,16 @@ pub fn colored_ascii_output (image: &mut DynamicImage) {
         for x in 0..width {
             let pixel = image.get_pixel( x as u32, y as u32);
             if pixel[3] == 0 {
-                write!(buffer, " ").unwrap();
+                write!(buffer, " ").expect("Error: could not write to buffer!");
                 continue;
             }
             let gray = pixel_to_gray(&pixel);
             let c = &get_lookup().0[gray as usize];
-            write!(buffer, "\x1b[38;2;{};{};{}m{}\x1b[0m",pixel[0],pixel[1],pixel[2],c).unwrap();
+            write!(buffer, "\x1b[38;2;{};{};{}m{}\x1b[0m",pixel[0],pixel[1],pixel[2],c).expect("Error: could not write to buffer!");
         }
-        writeln!(buffer).unwrap();
+        writeln!(buffer).expect("Error: could not write to buffer!");
     }
-    buffer.flush().unwrap();
+    buffer.flush().expect("Error: could not flush buffer!");
 }
 
 pub fn marching_squares_ascii_output(image: &mut DynamicImage){
@@ -85,13 +85,13 @@ pub fn text_color_ascii_output (image: &mut DynamicImage) {
         for x in 0..width {
             let pixel = image.get_pixel( x as u32, y as u32);
             if pixel[3] == 0 {
-                write!(buffer, " ").unwrap();
+                write!(buffer, " ").expect("Error: could not write to buffer!");
                 continue;
             }
             let c: char = gradient_chars[((width * y) + x) % gradient_len];
-            write!(buffer, "\x1b[38;2;{};{};{}m{}\x1b[0m",pixel[0],pixel[1],pixel[2],c).unwrap();
+            write!(buffer, "\x1b[38;2;{};{};{}m{}\x1b[0m",pixel[0],pixel[1],pixel[2],c).expect("Error: could not write to buffer!");
         }
-        writeln!(buffer).unwrap();
+        writeln!(buffer).expect("Error: could not write to buffer!");
     }
-    buffer.flush().unwrap();
+    buffer.flush().expect("Error: could not flush the buffer!");
 }

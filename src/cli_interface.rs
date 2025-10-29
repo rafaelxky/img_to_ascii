@@ -75,14 +75,23 @@ pub struct Args{
     pub set: Vec<String>,
 }
 
+pub fn validate_path(path: &str){
+    if !file_exists(path) && !url_exists(path){
+        if path.starts_with("http") {
+            println!("Error: invalid URL - {}", path);
+        } else {
+            println!("Error: file not found - {} ", path);
+        }
+        exit(1);
+    }
+    return;
+}
+
 pub fn handle_args() {
     let mut mp = MediaProcessor::new(ARGS.file_path.clone());
     let path = mp.get_path();
 
-    if !file_exists(path) && !url_exists(path){
-        println!("Error: {} not found", path);
-        std::process::exit(1);
-    }
+    validate_path(path);
 
     // sources
     // processors
@@ -206,7 +215,7 @@ fn get_file_type(file_path: &str) -> MediaType {
         return MediaType::Unknown;
     }
 
-    let data = fs::read(file_path).unwrap();
+    let data = fs::read(file_path).expect("Error: could not read file after passing checks!");
     if let Some(kind) = infer::get(&data) {
         if kind.mime_type().starts_with("image/") {
             return MediaType::Image;
