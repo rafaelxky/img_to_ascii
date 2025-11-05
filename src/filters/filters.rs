@@ -1,5 +1,5 @@
 
-use image::{DynamicImage, GenericImage, GenericImageView, ImageBuffer, Rgba, RgbaImage};
+use image::{DynamicImage, GenericImage, GenericImageView, ImageBuffer, Rgba};
 
 use crate::utils::{configs::{get_config, get_frame_counter}, img_utils::simd_gray_image};
 
