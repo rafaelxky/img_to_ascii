@@ -9,6 +9,7 @@ use crate::media::media_processor::MediaProcessor;
 use crate::media::media_process::{process_image,process_video};
 use crate::media::media_source::{get_image, get_video_decoder};
 use crate::filters::filters::*;
+use crate::media::media_source::get_image_from_bytes;
 
 #[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
 pub enum OutputOptions{
@@ -37,6 +38,12 @@ pub enum MediaType{
     Image,
     UrlVideo,
     UrlImage,
+}
+
+#[derive(Debug, Clone, ValueEnum, Serialize, Deserialize)]
+pub enum MediaSourceType{
+    Guess,
+    Bytes,
 }
 
 // todo: implement
@@ -69,6 +76,9 @@ pub struct Args{
     /// Filters list to apply to media
     #[arg(short = 'f', long)]
     pub filters: Vec<FilterOption>,
+
+    #[arg(short = 'i', long)]
+    pub media_source: Option<MediaSourceType>,
 
     /// Override custom configurations, can be donne manually in the config.json
     #[arg(short = 's', long)]
@@ -120,6 +130,15 @@ pub fn handle_args() {
             println!("Error, unsuported filetype!");
             exit(1);
         },
+    }
+
+    if let Some(media_source) = &ARGS.media_source{
+        match media_source {
+            MediaSourceType::Bytes => {
+                mp.with_image_byte_source(get_image_from_bytes);
+            },
+            _ => (),
+        }
     }
 
     // resize_type

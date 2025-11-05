@@ -59,3 +59,11 @@ pub fn get_online_video(url: &str, width: u32, height: u32, resize_type: &Resize
     };
     decoder_builder.build().unwrap()
 }
+
+pub fn get_image_from_bytes(bytes: &[u8], width: u32, height: u32, resize_type: &ResizeType) -> DynamicImage{
+    let cursor = Cursor::new(bytes);
+    let img = ImageReader::new(cursor)
+        .with_guessed_format().unwrap()
+        .decode().unwrap();
+    return scale_image(img, width, height, resize_type);
+}

@@ -93,6 +93,10 @@ impl MediaProcessor {
         self.source_media = Some(MediaSourceType::ImageSource(image_provider));
         self
     }
+    pub fn with_image_byte_source(&mut self, image_byte_provider: ByteImageSourceFunc) -> &mut Self{
+        self.source_media = Some(MediaSourceType::ByteImageSource(image_byte_provider));
+        self
+    }
     pub fn with_video_source(&mut self, video_decoder_provider: VideoSourceFunc) -> &mut Self {
         self.source_media = Some(MediaSourceType::VideoSource(video_decoder_provider));
         self
