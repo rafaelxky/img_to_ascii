@@ -30,7 +30,7 @@ pub struct Config {
 }
 
 fn read_config() -> Config {
-    let config_file =  &fs::read_to_string(&DEFAULT_CONFIG).expect("Error: missing json config");
+    let config_file =  &fs::read_to_string(&*CONF_PATH).expect("Error: missing json config");
     serde_json::from_str(&config_file).expect("Invalid Json")
 }
 
@@ -48,7 +48,6 @@ pub static CONF_PATH: Lazy<PathBuf> = Lazy::new(|| {
     let config_path = config_dir.join("config.json");
     if !config_path.exists() {
         fs::write(&config_path, DEFAULT_CONFIG).expect("Failed to write default config");
-        println!("Default config.json copied to {}", config_path.display());
     }
     config_path
 });
@@ -75,7 +74,7 @@ pub fn watch_config() -> notify::Result<()> {
 }
 
 fn reload_config() -> Result<(), Box<dyn Error>> {
-    let config_file =  &fs::read_to_string(&DEFAULT_CONFIG).expect("Error: missing json config");
+    let config_file =  &fs::read_to_string(&*CONF_PATH).expect("Error: missing json config");
     let mut config_value: Value = serde_json::from_str(config_file)?; 
 
    apply_config_overrides(&mut config_value);
