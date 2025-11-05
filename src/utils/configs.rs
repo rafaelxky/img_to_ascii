@@ -2,6 +2,7 @@ use clap::Parser;
 use notify::EventKind;
 use serde_json::Value;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use std::sync::Mutex;
 use std::sync::Arc;
 use std::fs;
@@ -37,18 +38,27 @@ pub fn get_config() -> Arc<Config> {
     CONFIG.read().expect("Error: could not get read on config").clone()
 }
 
+const DEFAULT_CONFIG: &str = include_str!("../../config.json");
+
+pub static CONF_PATH: Lazy<PathBuf> = Lazy::new(|| {
+    let proj = ProjectDirs::from("me", "rafaelxky", "gradient_ascii")
+        .expect("Cannot determine config directory");
+    let config_dir = proj.config_dir();
+    fs::create_dir_all(config_dir).expect("Error: could not create config directory!");
+    let config_path = config_dir.join("config.json");
+    if !config_path.exists() {
+        fs::write(&config_path, DEFAULT_CONFIG).expect("Failed to write default config");
+        println!("Default config.json copied to {}", config_path.display());
+    }
+    config_path
+});
+
 pub fn watch_config() -> notify::Result<()> {
     let (tx, rx) = channel();
 
     let mut watcher: RecommendedWatcher = RecommendedWatcher::new(tx, notify::Config::default().with_poll_interval(Duration::from_millis(1000)))?;
 
-    let proj = ProjectDirs::from("me", "rafaelxky", "gradient_ascii")
-        .expect("Cannot determine config directory");
-    let config_dir = proj.config_dir();
-    fs::create_dir_all(config_dir)?;
-    let path = config_dir.join("config.json");
-
-    watcher.watch(&path, RecursiveMode::NonRecursive)?;
+    watcher.watch(&CONF_PATH, RecursiveMode::NonRecursive)?;
 
     std::thread::spawn(move || {
         let _watcher = watcher;
