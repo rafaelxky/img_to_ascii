@@ -87,15 +87,17 @@ pub struct Args{
 }
 
 pub fn validate_path(path: &str){
-    if !file_exists(path) && !url_exists(path) && !(path == "stdin") {
-        if path.starts_with("http") {
-            println!("Error: invalid URL - {}", path);
-        } else {
-            println!("Error: file not found - {} ", path);
-        }
-        exit(1);
+    if file_exists(path){
+        return;
     }
-    return;
+    if path == "stdin" {
+        return;
+    }
+    if url_exists(path){
+        return;
+    }
+    println!("Error: file or url not found - {} ", path);
+    exit(1);
 }
 
 pub fn handle_args() {
