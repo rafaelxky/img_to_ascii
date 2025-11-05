@@ -142,8 +142,21 @@ impl MediaProcessor {
 
        if let (Some(media_processor), Some(media_source), Some(media_output)) = (&self.process_media, &self.source_media, self.media_output){
             // image
-           if let (MediaProcessorType::ImageProcessor(process_image), MediaSourceType::ImageSource(source_image)) = (media_processor, media_source){
-                process_image(source_image(&self.file_path, self.width, self.height, &self.resize_type), apply_filter_chain, &self.filter_chain, media_output);
+           if let MediaProcessorType::ImageProcessor(process_image) = media_processor{
+
+                let image = match media_source {
+                    MediaSourceType::ImageSource(source_image) => {
+                        source_image(&self.file_path, self.width, self.height, &self.resize_type)
+                    }
+                    MediaSourceType::ByteImageSource(source_image) => {
+                        source_image(self.file_path.as_bytes(), self.width, self.height, &self.resize_type)
+                    }
+                    _ => {
+                        eprintln!("Error: media processor and source mismatch!");
+                        std::process::exit(1);
+                    }
+                };
+                process_image(image, apply_filter_chain, &self.filter_chain, media_output);
            } else  
            // video
            if let (MediaProcessorType::VideoProcessor(process_video), MediaSourceType::VideoSource(source_video)) = (media_processor, media_source){
