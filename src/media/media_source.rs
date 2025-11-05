@@ -2,6 +2,7 @@ use reqwest::blocking::{Client};
 use std::io::{self, Read};
 use std::io::Cursor;
 use std::path::Path;
+use std::process::exit;
 use image::{DynamicImage, ImageReader};
 use video_rs::{DecoderBuilder, Resize};
 use video_rs::{Url};
@@ -67,6 +68,10 @@ pub fn get_image_from_bytes(width: u32, height: u32, resize_type: &ResizeType) -
     let cursor = Cursor::new(buf);
     let img = ImageReader::new(cursor)
         .with_guessed_format().unwrap()
-        .decode().unwrap();
-    return scale_image(img, width, height, resize_type);
+        .decode();
+    if let Err(_) = img {
+        println!("Error: missformed image bytes or unsuported type!");
+        exit(1);
+    }
+    return scale_image(img.unwrap(), width, height, resize_type);
 }
