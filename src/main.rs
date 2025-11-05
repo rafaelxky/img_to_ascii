@@ -6,7 +6,14 @@ mod utils;
 mod media;
 
 fn main() {
-    watch_config().expect("Error watching file!");
+    match watch_config() {
+        Ok(_) => {
+            ()
+        },
+        Err(_) => {
+            eprintln!("Error: could not find config file!")
+        }
+    }
     handle_args();
 }
 

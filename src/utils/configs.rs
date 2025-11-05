@@ -2,7 +2,6 @@ use clap::Parser;
 use notify::EventKind;
 use serde_json::Value;
 use serde::{Deserialize, Serialize};
-use std::path::Path;
 use std::sync::Mutex;
 use std::sync::Arc;
 use std::fs;
@@ -13,7 +12,7 @@ use once_cell::sync::Lazy;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::sync::mpsc::channel;
 use std::error::Error;
-
+use directories::ProjectDirs;
 
 use crate::cli_interface::Args;
 
@@ -43,7 +42,13 @@ pub fn watch_config() -> notify::Result<()> {
 
     let mut watcher: RecommendedWatcher = RecommendedWatcher::new(tx, notify::Config::default().with_poll_interval(Duration::from_millis(1000)))?;
 
-    watcher.watch(Path::new("config.json"), RecursiveMode::NonRecursive)?;
+    let proj = ProjectDirs::from("me", "rafaelxky", "gradient_ascii")
+        .expect("Cannot determine config directory");
+    let config_dir = proj.config_dir();
+    fs::create_dir_all(config_dir).unwrap();
+    let path = config_dir.join("config.json");
+
+    watcher.watch(&path, RecursiveMode::NonRecursive)?;
 
     std::thread::spawn(move || {
         let _watcher = watcher;
