@@ -45,7 +45,7 @@ pub fn watch_config() -> notify::Result<()> {
     let proj = ProjectDirs::from("me", "rafaelxky", "gradient_ascii")
         .expect("Cannot determine config directory");
     let config_dir = proj.config_dir();
-    fs::create_dir_all(config_dir).unwrap();
+    fs::create_dir_all(config_dir)?;
     let path = config_dir.join("config.json");
 
     watcher.watch(&path, RecursiveMode::NonRecursive)?;
