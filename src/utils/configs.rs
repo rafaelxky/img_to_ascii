@@ -30,7 +30,7 @@ pub struct Config {
 }
 
 fn read_config() -> Config {
-    let config_file =  &fs::read_to_string("config.json").expect("Error: missing json config");
+    let config_file =  &fs::read_to_string(&DEFAULT_CONFIG).expect("Error: missing json config");
     serde_json::from_str(&config_file).expect("Invalid Json")
 }
 
