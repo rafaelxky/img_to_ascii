@@ -75,7 +75,7 @@ pub fn watch_config() -> notify::Result<()> {
 }
 
 fn reload_config() -> Result<(), Box<dyn Error>> {
-    let config_file =  &fs::read_to_string("config.json").expect("Error: missing json config");
+    let config_file =  &fs::read_to_string(&DEFAULT_CONFIG).expect("Error: missing json config");
     let mut config_value: Value = serde_json::from_str(config_file)?; 
 
    apply_config_overrides(&mut config_value);
