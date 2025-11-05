@@ -87,7 +87,7 @@ pub struct Args{
 }
 
 pub fn validate_path(path: &str){
-    if !file_exists(path) && !url_exists(path){
+    if !file_exists(path) && !url_exists(path) && !(path == "stdin") {
         if path.starts_with("http") {
             println!("Error: invalid URL - {}", path);
         } else {
@@ -220,6 +220,11 @@ pub fn handle_args() {
 
 // gets file type
 fn get_file_type(file_path: &str) -> MediaType {
+
+    if file_path == "stdin" {
+        return MediaType::Image;
+    }
+
     if file_path.starts_with("http") {
         let client = Client::new();
         let response = client.head(file_path).send();
@@ -240,6 +245,7 @@ fn get_file_type(file_path: &str) -> MediaType {
     }
 
     let data = fs::read(file_path).expect("Error: could not read file after passing checks!");
+
     if let Some(kind) = infer::get(&data) {
         if kind.mime_type().starts_with("image/") {
             return MediaType::Image;
