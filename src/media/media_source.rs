@@ -1,4 +1,5 @@
 use reqwest::blocking::{Client};
+use std::io::{self, Read};
 use std::io::Cursor;
 use std::path::Path;
 use image::{DynamicImage, ImageReader};
@@ -60,8 +61,10 @@ pub fn get_online_video(url: &str, width: u32, height: u32, resize_type: &Resize
     decoder_builder.build().unwrap()
 }
 
-pub fn get_image_from_bytes(bytes: &[u8], width: u32, height: u32, resize_type: &ResizeType) -> DynamicImage{
-    let cursor = Cursor::new(bytes);
+pub fn get_image_from_bytes(width: u32, height: u32, resize_type: &ResizeType) -> DynamicImage{
+    let mut buf = Vec::new();
+    io::stdin().read_to_end(&mut buf).expect("failed to read stdin");
+    let cursor = Cursor::new(buf);
     let img = ImageReader::new(cursor)
         .with_guessed_format().unwrap()
         .decode().unwrap();

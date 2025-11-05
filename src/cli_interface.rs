@@ -59,7 +59,7 @@ pub enum LocationType{
 pub struct Args{
 
     /// Media source path
-    pub file_path: String,
+    pub file_path: Option<String>,
     /// Media resize width (defaut: terminal size)
     pub width: Option<u32>,
     /// Media resize height (default: terminal size)
@@ -77,6 +77,7 @@ pub struct Args{
     #[arg(short = 'f', long)]
     pub filters: Vec<FilterOption>,
 
+    /// unimplemented yet
     #[arg(short = 'i', long)]
     pub media_source: Option<MediaSourceType>,
 
@@ -98,7 +99,15 @@ pub fn validate_path(path: &str){
 }
 
 pub fn handle_args() {
-    let mut mp = MediaProcessor::new(ARGS.file_path.clone());
+    let mut mp = match &ARGS.file_path {
+        Some(file_path) => {
+            MediaProcessor::new(file_path.clone())
+        },
+        None => {
+            MediaProcessor::new("stdin".to_string())
+        }
+    };
+    
     let path = mp.get_path();
 
     validate_path(path);
@@ -132,13 +141,9 @@ pub fn handle_args() {
         },
     }
 
-    if let Some(media_source) = &ARGS.media_source{
-        match media_source {
-            MediaSourceType::Bytes => {
-                mp.with_image_byte_source(get_image_from_bytes);
-            },
-            _ => (),
-        }
+    // if path is null
+    if mp.file_path == "stdin" {
+        mp.with_image_byte_source(get_image_from_bytes);
     }
 
     // resize_type

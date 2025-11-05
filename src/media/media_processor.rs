@@ -149,7 +149,7 @@ impl MediaProcessor {
                         source_image(&self.file_path, self.width, self.height, &self.resize_type)
                     }
                     MediaSourceType::ByteImageSource(source_image) => {
-                        source_image(self.file_path.as_bytes(), self.width, self.height, &self.resize_type)
+                        source_image(self.width, self.height, &self.resize_type)
                     }
                     _ => {
                         eprintln!("Error: media processor and source mismatch!");

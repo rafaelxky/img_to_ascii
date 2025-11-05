@@ -6,7 +6,7 @@ use clap::{ValueEnum};
 use serde::{Deserialize, Serialize};
 
 pub type ImageSourceFunc = fn(&str, u32, u32, &ResizeType) -> DynamicImage;
-pub type ByteImageSourceFunc = fn(&[u8], u32, u32, &ResizeType) -> DynamicImage;
+pub type ByteImageSourceFunc = fn(u32, u32, &ResizeType) -> DynamicImage;
 pub type VideoSourceFunc = fn(&str, u32, u32, &ResizeType) -> Decoder;
 pub type ImageProcessorFunc = fn(DynamicImage, ApplyFilterChainFunc, &FilterChainType, MediaOutputFunc);
 pub type VideoProcessorFunc = fn(Decoder, u64, ApplyFilterChainFunc, &FilterChainType, MediaOutputFunc);
